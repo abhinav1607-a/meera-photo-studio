@@ -557,3 +557,9 @@ img { display: block; max-width: 100%; }
   .service-admin-row .small-action:nth-last-child(2) { grid-column: 2; justify-self: start; }
   .service-admin-row .danger-action { grid-column: 3; }
 }
+
+
+.video-trigger { padding: 0; width: 100%; display: block; border: 0; background: #dbe3e9; color: inherit; text-align: left; cursor: pointer; }
+.video-title-button { border: 0; padding: 0; margin: 0; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.video-card .video-title-button:hover { color: #4d6a86; }
+.video-card p { color: #687686; font-size: 11px; line-height: 1.7; margin-top: 0; }
