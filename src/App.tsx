@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import {
   ArrowDown, ArrowRight, ArrowUpRight, Camera, Check, ChevronLeft, ChevronRight,
   Clapperboard, Clock3, Instagram, Mail, MapPin, Menu, Phone, Play, Send,
@@ -61,6 +61,7 @@ function App() {
 }
 
 function PortfolioSite() {
+  const reduceMotion = useReducedMotion();
   const [menuOpen, setMenuOpen] = useState(false);
   const [category, setCategory] = useState('All Work');
   const [photos, setPhotos] = useState<GalleryItem[]>(demoPhotos);
@@ -354,7 +355,7 @@ function PortfolioSite() {
 
       <AnimatePresence>
         {activeVideo && <VideoPlayerModal video={activeVideo} onClose={() => setActiveVideo(null)} />}
-        {lightboxPhoto && <motion.div className="lightbox" role="dialog" aria-modal="true" aria-label="Portfolio image viewer" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setLightboxIndex(null)}>
+        {lightboxPhoto && <motion.div className="lightbox" role="dialog" aria-modal="true" aria-label="Portfolio image viewer" initial={reduceMotion ? false : { opacity: 0 }} animate={{ opacity: 1 }} exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }} onClick={() => setLightboxIndex(null)}>
           <button className="lightbox-close" onClick={() => setLightboxIndex(null)} aria-label="Close image viewer"><X size={25} /></button>
           <button className="lightbox-arrow lightbox-prev" aria-label="Previous photo" onClick={(e) => { e.stopPropagation(); setLightboxIndex((index) => index === null ? null : (index - 1 + visiblePhotos.length) % visiblePhotos.length); }}><ChevronLeft size={28} /></button>
           <figure onClick={(e) => e.stopPropagation()}><img src={lightboxPhoto.image_url} alt={lightboxPhoto.alt_text || lightboxPhoto.title} /><figcaption><span>{lightboxPhoto.category}</span><strong>{lightboxPhoto.title}</strong><small>{(lightboxIndex ?? 0) + 1} / {visiblePhotos.length}</small></figcaption></figure>
@@ -389,9 +390,10 @@ function getEmbeddableVideoUrl(value: string): string | null {
 }
 
 function VideoPlayerModal({ video, onClose }: { video: VideoProject; onClose: () => void }) {
+  const reduceMotion = useReducedMotion();
   const embedUrl = getEmbeddableVideoUrl(video.video_url);
   const isDirectVideo = /\\.(mp4|webm|ogg)(?:\\?.*)?$/i.test(video.video_url);
-  return <motion.div className="video-modal" role="dialog" aria-modal="true" aria-label={video.title} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}>
+  return <motion.div className="video-modal" role="dialog" aria-modal="true" aria-label={video.title} initial={reduceMotion ? false : { opacity: 0 }} animate={{ opacity: 1 }} exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }} onClick={onClose}>
     <button className="video-modal-close" onClick={onClose} aria-label="Close video player"><X size={24} /></button>
     <div className="video-modal-content" onClick={(event) => event.stopPropagation()}>
       {embedUrl ? <iframe src={embedUrl} title={video.title} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" /> : isDirectVideo ? <video src={video.video_url} controls autoPlay playsInline poster={video.poster_url || undefined}>Your browser does not support this video.</video> : <div className="video-external-fallback"><Play size={27} /><h3>Watch the film</h3><p>This project uses an external video link that cannot be embedded here.</p><a className="button button-light" href={video.video_url} target="_blank" rel="noreferrer">Open video externally <ArrowUpRight size={15} /></a></div>}
