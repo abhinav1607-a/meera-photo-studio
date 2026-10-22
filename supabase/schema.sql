@@ -124,7 +124,7 @@ using (public.is_admin()) with check (public.is_admin());
 drop policy if exists "Public can read site settings" on public.site_settings;
 create policy "Public can read site settings"
 on public.site_settings for select to anon, authenticated
-using (true);
+using (key = 'homepage');
 
 drop policy if exists "Admins manage site settings" on public.site_settings;
 create policy "Admins manage site settings"
