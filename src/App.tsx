@@ -1,0 +1,602 @@
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import {
+  ArrowDown, ArrowRight, ArrowUpRight, Camera, Check, ChevronLeft, ChevronRight,
+  Clapperboard, Clock3, Instagram, Mail, MapPin, Menu, Phone, Play, Send,
+  Sparkles, Video, X, MessageCircle, Aperture
+} from 'lucide-react';
+import { isSupabaseConfigured, supabase, type GalleryItem, type Enquiry } from './lib/supabase';
+
+const WHATSAPP_NUMBER = '919827486699';
+const PHONE_DISPLAY = '+91 9827486699';
+const EMAIL_ADDRESS = 'meerastudiorpr@gmail.com';
+
+const demoPhotos: GalleryItem[] = [
+  { id: 'sample-1', title: 'A Celebration of Love', caption: 'Wedding stories · sample imagery', category: 'Weddings', image_url: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1400&q=85', alt_text: 'Wedding celebration in warm evening light', is_published: true, is_featured: true, position: 1 },
+  { id: 'sample-2', title: 'Quiet Promises', caption: 'Pre-wedding · sample imagery', category: 'Pre-Wedding', image_url: 'https://images.unsplash.com/photo-1537633552985-df8429e8048b?auto=format&fit=crop&w=1400&q=85', alt_text: 'Couple portrait in a natural setting', is_published: true, is_featured: false, position: 2 },
+  { id: 'sample-3', title: 'The Little Moments', caption: 'Celebrations · sample imagery', category: 'Birthdays', image_url: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=1400&q=85', alt_text: 'Colorful birthday celebration details', is_published: true, is_featured: false, position: 3 },
+  { id: 'sample-4', title: 'In Their Element', caption: 'Portraits · sample imagery', category: 'Portraits', image_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1400&q=85', alt_text: 'Expressive studio portrait', is_published: true, is_featured: false, position: 4 },
+  { id: 'sample-5', title: 'The Joy Between Frames', caption: 'Candid · sample imagery', category: 'Candid Photography', image_url: 'https://images.unsplash.com/photo-1529636798458-92182e662485?auto=format&fit=crop&w=1400&q=85', alt_text: 'Candid moment at an outdoor celebration', is_published: true, is_featured: false, position: 5 },
+  { id: 'sample-6', title: 'A Wider Perspective', caption: 'Locations · sample imagery', category: 'Drone Photography', image_url: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1400&q=85', alt_text: 'Wide landscape with a dramatic sky', is_published: true, is_featured: false, position: 6 },
+  { id: 'sample-7', title: 'Made to Remember', caption: 'Album stories · sample imagery', category: 'Kazima Albums', image_url: 'https://images.unsplash.com/photo-1523438885200-e635ba2c371e?auto=format&fit=crop&w=1400&q=85', alt_text: 'Wedding details in soft natural light', is_published: true, is_featured: false, position: 7 },
+  { id: 'sample-8', title: 'People and Purpose', caption: 'Events · sample imagery', category: 'Events', image_url: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=1400&q=85', alt_text: 'Elegant event space prepared for a gathering', is_published: true, is_featured: false, position: 8 },
+  { id: 'sample-9', title: 'The Details Matter', caption: 'Editorial · sample imagery', category: 'Commercial Photography', image_url: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1400&q=85', alt_text: 'Creative event lighting and atmosphere', is_published: true, is_featured: false, position: 9 },
+];
+
+const baseServices = [
+  { title: 'Wedding Photography', short: 'Every ritual, every glance, every emotion—preserved with care.', image: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=900&q=80', number: '01' },
+  { title: 'Pre-Wedding Shoots', short: 'Thoughtful concepts and portraits that feel unmistakably yours.', image: 'https://images.unsplash.com/photo-1537633552985-df8429e8048b?auto=format&fit=crop&w=900&q=80', number: '02' },
+  { title: 'Birthdays & Celebrations', short: 'The energy, the people, and the little moments worth keeping.', image: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=900&q=80', number: '03' },
+  { title: 'Events & Institutions', short: 'Reliable, considered coverage for public, cultural and professional events.', image: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=900&q=80', number: '04' },
+  { title: 'Videography & Films', short: 'Atmospheric films and highlight edits that bring the day back to life.', image: 'https://images.unsplash.com/photo-1492619375914-88005aa9e8fb?auto=format&fit=crop&w=900&q=80', number: '05' },
+  { title: 'Drone Cinematography', short: 'Aerial perspectives for suitable venues, outdoor shoots and events.', image: 'https://images.unsplash.com/photo-1473968512647-3e447244af8f?auto=format&fit=crop&w=900&q=80', number: '06' },
+  { title: 'Portraits & Families', short: 'Honest portraits and family photographs to return to for years.', image: 'https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=900&q=80', number: '07' },
+  { title: 'Kazima Album Making', short: 'Beautifully arranged photographs, thoughtfully brought together in print.', image: 'https://images.unsplash.com/photo-1523438885200-e635ba2c371e?auto=format&fit=crop&w=900&q=80', number: '08' },
+];
+
+const categoryNames = ['All Work', 'Weddings', 'Pre-Wedding', 'Birthdays', 'Events', 'Candid Photography', 'Portraits', 'Family Photography', 'Commercial Photography', 'Sports Photography', 'Drone Photography', 'Cinematic Projects', 'Kazima Albums'];
+
+const wa = (service: string, details = '') => 'https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent('Hello Meera Photo Studio, I would like to enquire about ' + service + '.' + (details ? '\n\n' + details : '') + ' Please share your packages, availability, and pricing.');
+
+type VideoProject = { id: string; title: string; description: string | null; category: string; video_url: string; poster_url: string | null; is_published: boolean; position: number };
+type ServiceRecord = { id: string; title: string; description: string; image_url: string | null; is_published: boolean; position: number };
+type SiteConfig = { hero_title: string; hero_subtitle: string; about_text: string; phone: string; email: string; location: string };
+const defaultConfig: SiteConfig = {
+  hero_title: 'Stories Captured.\nMemories Preserved.',
+  hero_subtitle: 'Professional photography & cinematography in Raipur, Chhattisgarh. Creating timeless visual stories for more than three decades.',
+  about_text: 'Photography is more than capturing an image. It is about preserving emotions, celebrating milestones, and telling stories that remain meaningful for generations. With more than 30 years of experience, Mukesh Agrawal brings dedication, creativity, and professional expertise to every assignment.',
+  phone: PHONE_DISPLAY,
+  email: EMAIL_ADDRESS,
+  location: 'Raipur, Chhattisgarh, India',
+};
+
+function openWhatsApp(service: string, details = '') {
+  window.open(wa(service, details), '_blank', 'noopener,noreferrer');
+}
+
+function App() {
+  const isAdmin = window.location.pathname.replace(/\/$/, '') === '/admin';
+  return isAdmin ? <AdminPage /> : <PortfolioSite />;
+}
+
+function PortfolioSite() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [category, setCategory] = useState('All Work');
+  const [photos, setPhotos] = useState<GalleryItem[]>(demoPhotos);
+  const [videos, setVideos] = useState<VideoProject[]>([]);
+  const [siteConfig, setSiteConfig] = useState<SiteConfig>(defaultConfig);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [formState, setFormState] = useState({ full_name: '', phone: '', email: '', service: 'Wedding Photography', event_date: '', event_location: '', message: '' });
+  const [formMessage, setFormMessage] = useState('');
+  const [formError, setFormError] = useState('');
+  const [sending, setSending] = useState(false);
+
+  useEffect(() => {
+    const client = supabase;
+    if (!client) return;
+    let alive = true;
+    async function loadContent() {
+      try {
+        const [galleryResult, videoResult, settingsResult] = await Promise.all([
+          client.from('gallery_items').select('id,title,caption,category,image_url,alt_text,is_published,is_featured,position,created_at').eq('is_published', true).order('position', { ascending: true }),
+          client.from('video_projects').select('id,title,description,category,video_url,poster_url,is_published,position').eq('is_published', true).order('position', { ascending: true }),
+          client.from('site_settings').select('key,value').eq('key', 'homepage').maybeSingle(),
+        ]);
+        if (!alive) return;
+        if (!galleryResult.error && galleryResult.data && galleryResult.data.length > 0) setPhotos(galleryResult.data as GalleryItem[]);
+        if (!videoResult.error && videoResult.data) setVideos(videoResult.data as VideoProject[]);
+        if (!settingsResult.error && settingsResult.data?.value) setSiteConfig({ ...defaultConfig, ...(settingsResult.data.value as Partial<SiteConfig>) });
+      } catch (error) {
+        console.error('Could not load portfolio content:', error);
+      }
+    }
+    void loadContent();
+    return () => { alive = false; };
+  }, []);
+
+  const visiblePhotos = useMemo(() => category === 'All Work' ? photos : photos.filter((photo) => photo.category === category), [photos, category]);
+  const lightboxPhoto = lightboxIndex === null ? null : visiblePhotos[lightboxIndex];
+
+  useEffect(() => {
+    if (lightboxIndex === null) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setLightboxIndex(null);
+      if (event.key === 'ArrowRight') setLightboxIndex((index) => index === null ? null : (index + 1) % visiblePhotos.length);
+      if (event.key === 'ArrowLeft') setLightboxIndex((index) => index === null ? null : (index - 1 + visiblePhotos.length) % visiblePhotos.length);
+    };
+    window.addEventListener('keydown', onKey);
+    document.body.style.overflow = 'hidden';
+    return () => { window.removeEventListener('keydown', onKey); document.body.style.overflow = ''; };
+  }, [lightboxIndex, visiblePhotos.length]);
+
+  async function submitEnquiry(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setFormMessage('');
+    setFormError('');
+    if (formState.full_name.trim().length < 2 || formState.phone.trim().length < 7) {
+      setFormError('Please enter your name and a valid phone number.');
+      return;
+    }
+    setSending(true);
+    const details = 'Name: ' + formState.full_name + '\nPhone: ' + formState.phone + (formState.email ? '\nEmail: ' + formState.email : '') + '\nPreferred date: ' + (formState.event_date || 'Not specified') + '\nLocation: ' + (formState.event_location || 'Not specified') + '\nMessage: ' + (formState.message || '—');
+    const client = supabase;
+    if (!client) {
+      openWhatsApp(formState.service, details);
+      setFormMessage('WhatsApp has opened with your enquiry draft. Please press Send in WhatsApp to contact the studio.');
+      setSending(false);
+      return;
+    }
+    try {
+      const { error } = await client.from('enquiries').insert([{
+        full_name: formState.full_name.trim(),
+        phone: formState.phone.trim(),
+        email: formState.email.trim() || null,
+        service: formState.service,
+        event_date: formState.event_date || null,
+        event_location: formState.event_location.trim() || null,
+        message: formState.message.trim() || null,
+      }]);
+      if (error) throw error;
+      setFormMessage('Thank you. Your enquiry has been received; the studio will contact you directly. This is an enquiry, not a confirmed booking.');
+      setFormState({ full_name: '', phone: '', email: '', service: 'Wedding Photography', event_date: '', event_location: '', message: '' });
+    } catch (error) {
+      console.error('Enquiry submission failed:', error);
+      setFormError('We could not submit your enquiry online. You can send the same details to the studio through WhatsApp instead.');
+    } finally {
+      setSending(false);
+    }
+  }
+
+  return (
+    <div className="site-shell">
+      <header className="site-header">
+        <a href="#home" className="wordmark" aria-label="Meera Photo Studio home">
+          <span className="wordmark-icon"><Aperture size={24} strokeWidth={1.4} /></span>
+          <span><strong>MEERA</strong><small>PHOTO STUDIO</small></span>
+        </a>
+        <nav className={menuOpen ? 'main-nav nav-open' : 'main-nav'} aria-label="Main navigation">
+          {[['About', '#about'], ['Services', '#services'], ['Portfolio', '#portfolio'], ['Kazima Albums', '#albums'], ['Films', '#films'], ['Contact', '#contact']].map(([label, href]) => (
+            <a key={label} href={href} onClick={() => setMenuOpen(false)}>{label}</a>
+          ))}
+          <a className="nav-book mobile-book" href="#contact" onClick={() => setMenuOpen(false)}>Book a Shoot <ArrowUpRight size={15} /></a>
+        </nav>
+        <a className="nav-book desktop-book" href="#contact">Book a Shoot <ArrowUpRight size={15} /></a>
+        <button className="menu-toggle" onClick={() => setMenuOpen(!menuOpen)} aria-label={menuOpen ? 'Close menu' : 'Open menu'} aria-expanded={menuOpen}>
+          {menuOpen ? <X size={23} /> : <Menu size={23} />}
+        </button>
+      </header>
+
+      <main>
+        <section className="hero" id="home">
+          <div className="hero-image" role="img" aria-label="Cinematic wedding scene in warm evening light" />
+          <div className="hero-shade" />
+          <div className="hero-content">
+            <div className="eyebrow light-eyebrow"><span /> PHOTOGRAPHY · CINEMATOGRAPHY · STORYTELLING</div>
+            <p className="hero-kicker">RAIPUR, CHHATTISGARH · EST. WITH EXPERIENCE</p>
+            <h1>{siteConfig.hero_title.split('\n').map((line, index) => <span key={index}>{line}{index === 0 ? <br /> : null}</span>)}</h1>
+            <p className="hero-copy">{siteConfig.hero_subtitle}</p>
+            <div className="hero-actions">
+              <a className="button button-light" href="#portfolio">Explore the Portfolio <ArrowRight size={17} /></a>
+              <button className="button button-outline-light" onClick={() => openWhatsApp('a photography or film booking')}>Book Your Shoot <ArrowUpRight size={17} /></button>
+            </div>
+          </div>
+          <div className="hero-bottom"><span>01 — THE ART OF PRESENCE</span><a href="#about">SCROLL TO DISCOVER <ArrowDown size={14} /></a></div>
+          <div className="hero-side-note">REAL MOMENTS. LASTING STORIES.</div>
+        </section>
+
+        {!isSupabaseConfigured && <div className="preview-note"><span className="preview-dot" /> PREVIEW MODE — sample photographs are displayed until the studio connects storage and uploads its own portfolio.</div>}
+
+        <section className="intro section-pad" id="about">
+          <div className="intro-meta"><span className="section-index">01 / ABOUT THE STUDIO</span><span className="vertical-rule" /></div>
+          <div className="intro-main">
+            <div className="eyebrow"><span /> THE PERSON BEHIND THE LENS</div>
+            <h2>A legacy behind<br /><em>the lens.</em></h2>
+            <div className="intro-grid">
+              <p className="intro-lead">{siteConfig.about_text}</p>
+              <div className="intro-detail">
+                <p>From intimate family moments to weddings, sporting events and institutional assignments, every frame is approached with care, calm direction and an eye for the details that matter.</p>
+                <a href="#portfolio" className="text-link">Discover the work <ArrowUpRight size={16} /></a>
+              </div>
+            </div>
+            <div className="experience-line"><strong>30<span>+</span></strong><div><b>YEARS OF EXPERIENCE</b><p>Craft shaped by time, trust and thousands of moments.</p></div><div className="experience-mark"><Camera size={38} strokeWidth={1} /><span>MEERA PHOTO STUDIO · RAIPUR</span></div></div>
+          </div>
+        </section>
+
+        <section className="services section-pad" id="services">
+          <div className="section-heading">
+            <div><div className="eyebrow"><span /> WHAT WE DO</div><h2>Made for the moments<br /><em>that matter.</em></h2></div>
+            <p>Thoughtful photography and cinematic storytelling for life's milestones, celebrations and meaningful work.</p>
+          </div>
+          <div className="service-grid">
+            {baseServices.map((service) => (
+              <article className="service-card" key={service.title}>
+                <button className="service-photo" onClick={() => openWhatsApp(service.title)} aria-label={'Enquire about ' + service.title}>
+                  <img src={service.image} alt={service.title + ' sample photograph'} loading="lazy" />
+                  <span className="service-photo-arrow"><ArrowUpRight size={19} /></span>
+                </button>
+                <div className="service-card-info"><span className="service-number">{service.number}</span><div><h3>{service.title}</h3><p>{service.short}</p><button className="text-link" onClick={() => openWhatsApp(service.title)}>Enquire about this service <ArrowUpRight size={14} /></button></div></div>
+              </article>
+            ))}
+          </div>
+          <p className="service-footnote">Drone operations are subject to applicable permissions, airspace restrictions and weather conditions.</p>
+        </section>
+
+        <section className="booking-band">
+          <div className="booking-backdrop" />
+          <div className="booking-copy">
+            <div className="eyebrow light-eyebrow"><span /> THE CALENDAR IS OPEN</div>
+            <h2>Bookings<br /><em>are open.</em></h2>
+            <p>Tell us what you're planning. We'll help you make room for the moments you'll want to remember.</p>
+          </div>
+          <div className="booking-list">
+            {['Wedding Photography', 'Pre-Wedding Shoots', 'Birthday Photography', 'Events & Celebrations'].map((service, index) => (
+              <button key={service} onClick={() => openWhatsApp(service)}><span>0{index + 1}</span><strong>{service}</strong><ArrowUpRight size={19} /></button>
+            ))}
+            <p>Also accepting enquiries for films, drone shoots, portraits and Kazima Albums.</p>
+          </div>
+        </section>
+
+        <section className="portfolio section-pad" id="portfolio">
+          <div className="section-heading portfolio-heading">
+            <div><div className="eyebrow"><span /> SELECTED STORIES</div><h2>The art of<br /><em>remembering.</em></h2></div>
+            <p>Every story has its own rhythm. Browse by occasion and explore a few of the ways we see the world.</p>
+          </div>
+          <div className="filter-row" role="group" aria-label="Filter portfolio by category">
+            {categoryNames.map((item) => <button key={item} className={category === item ? 'filter-pill active' : 'filter-pill'} onClick={() => { setCategory(item); setLightboxIndex(null); }}>{item}</button>)}
+          </div>
+          <div className="portfolio-grid">
+            {visiblePhotos.map((photo, index) => (
+              <button className={'portfolio-item portfolio-item-' + (index % 6 + 1)} key={photo.id} onClick={() => setLightboxIndex(index)} aria-label={'View ' + photo.title}>
+                <img src={photo.image_url} alt={photo.alt_text || photo.title} loading="lazy" />
+                <span className="portfolio-hover"><span>{photo.category}</span><strong>{photo.title}</strong><i><ArrowUpRight size={18} /></i></span>
+              </button>
+            ))}
+          </div>
+          {visiblePhotos.length === 0 && <div className="empty-gallery"><Camera size={27} /><h3>More stories are on the way.</h3><p>There are no published photographs in this category yet.</p><button className="text-link" onClick={() => setCategory('All Work')}>View all work <ArrowRight size={15} /></button></div>}
+          <div className="portfolio-bottom"><span>PHOTOGRAPHS THAT TAKE YOU BACK.</span><button className="text-link" onClick={() => openWhatsApp('a portfolio consultation')}>Discuss your project <ArrowUpRight size={15} /></button></div>
+        </section>
+
+        <section className="album-feature" id="albums">
+          <div className="album-image"><img src="https://images.unsplash.com/photo-1523438885200-e635ba2c371e?auto=format&fit=crop&w=1400&q=85" alt="Beautifully arranged wedding album details, sample imagery" loading="lazy" /><span className="image-caption">THE PHYSICAL BEAUTY OF A MEMORY</span></div>
+          <div className="album-copy">
+            <div className="eyebrow"><span /> THE KAZIMA ALBUM EXPERIENCE</div>
+            <span className="album-overline">A STORY, HELD IN YOUR HANDS</span>
+            <h2>Memories,<br /><em>beautifully bound.</em></h2>
+            <p>Some photographs deserve more than a place on a screen. Kazima Album Making brings your chosen images together in a thoughtful, beautifully arranged keepsake made to be revisited and shared.</p>
+            <ul><li><Check size={15} /> Personalised image selection and layout</li><li><Check size={15} /> Wedding, pre-wedding and family albums</li><li><Check size={15} /> An elegant way to preserve your story</li></ul>
+            <button className="button button-dark" onClick={() => openWhatsApp('Kazima Album Making')}>Enquire about Kazima Albums <ArrowUpRight size={16} /></button>
+          </div>
+        </section>
+
+        <section className="films section-pad" id="films">
+          <div className="section-heading">
+            <div><div className="eyebrow"><span /> IN MOTION</div><h2>More than a moment.<br /><em>A feeling, in motion.</em></h2></div>
+            <p>Wedding films, pre-wedding stories, event highlights and institutional coverage—crafted to bring the atmosphere back.</p>
+          </div>
+          {videos.length > 0 ? <div className="video-grid">
+            {videos.map((video) => <a href={video.video_url} target="_blank" rel="noreferrer" className="video-card" key={video.id}>
+              <div className="video-poster"><img src={video.poster_url || demoPhotos[0].image_url} alt={video.title + ' poster'} loading="lazy" /><span className="play-button"><Play size={18} fill="currentColor" /></span></div><span className="video-category">{video.category}</span><h3>{video.title}</h3><p>{video.description}</p>
+            </a>)}
+          </div> : <div className="film-teaser">
+            <div className="film-teaser-image"><img src="https://images.unsplash.com/photo-1492619375914-88005aa9e8fb?auto=format&fit=crop&w=1500&q=85" alt="Professional video production equipment, sample imagery" loading="lazy" /><div className="film-overlay"><span className="play-symbol"><Play size={18} fill="currentColor" /></span><span>THE STORY CONTINUES</span></div></div>
+            <div className="film-teaser-copy"><Clapperboard size={28} strokeWidth={1.25} /><h3>From the first look<br />to the final frame.</h3><p>Ask us about wedding cinematography, event films and cinematic highlight edits.</p><button className="text-link" onClick={() => openWhatsApp('Videography and Cinematography')}>Explore film services <ArrowUpRight size={15} /></button></div>
+          </div>}
+          <div className="film-service-line"><span><Video size={17} /> WEDDING FILMS</span><span><Clapperboard size={17} /> EVENT HIGHLIGHTS</span><span><Sparkles size={17} /> DRONE CINEMATOGRAPHY</span></div>
+        </section>
+
+        <section className="credentials">
+          <div className="credentials-top"><div className="eyebrow light-eyebrow"><span /> EXPERIENCE & TRUST</div><h2>Professional photography<br /><em>with a wider perspective.</em></h2><p>Meera Photo Studio's stated institutional photography associations.</p></div>
+          <div className="credentials-list">
+            {['Sports & Youth Welfare', 'C.G. Olympic Association', 'Public Work Devison', 'CG Cricket Asso.'].map((name, index) => <div key={name}><span>0{index + 1}</span><strong>{name}</strong><ArrowUpRight size={17} /></div>)}
+          </div>
+          <div className="credentials-note">Organisational names shown as supplied. Please confirm official styling and permissions before publishing any institutional logo or endorsement.</div>
+        </section>
+
+        <section className="contact section-pad" id="contact">
+          <div className="contact-heading">
+            <div className="eyebrow"><span /> BEGIN A CONVERSATION</div>
+            <h2>Let's create<br /><em>something memorable.</em></h2>
+            <p>Share a little about what you're planning. We'll get back to you to discuss the details and availability.</p>
+            <div className="contact-details">
+              <a href={'tel:' + (siteConfig.phone || PHONE_DISPLAY).replace(/[^+\d]/g, '')}><span className="contact-icon"><Phone size={17} /></span><span><small>CALL THE STUDIO</small><strong>{siteConfig.phone || PHONE_DISPLAY}</strong></span><ArrowUpRight size={16} /></a>
+              <a href={'mailto:' + (siteConfig.email || EMAIL_ADDRESS)}><span className="contact-icon"><Mail size={17} /></span><span><small>EMAIL</small><strong>{siteConfig.email || EMAIL_ADDRESS}</strong></span><ArrowUpRight size={16} /></a>
+              <div><span className="contact-icon"><MapPin size={17} /></span><span><small>BASED IN</small><strong>{siteConfig.location}</strong></span></div>
+            </div>
+          </div>
+          <form className="contact-form" onSubmit={submitEnquiry}>
+            <div className="form-intro"><span>ENQUIRY FORM</span><span className="form-step">01 — 02</span></div>
+            <div className="form-row">
+              <label>Full name <span>*</span><input required minLength={2} maxLength={120} value={formState.full_name} onChange={(e) => setFormState({ ...formState, full_name: e.target.value })} placeholder="Your name" autoComplete="name" /></label>
+              <label>Phone number <span>*</span><input required minLength={7} maxLength={30} value={formState.phone} onChange={(e) => setFormState({ ...formState, phone: e.target.value })} placeholder="+91" autoComplete="tel" /></label>
+            </div>
+            <label>Email address <span className="optional">(optional)</span><input type="email" maxLength={254} value={formState.email} onChange={(e) => setFormState({ ...formState, email: e.target.value })} placeholder="you@example.com" autoComplete="email" /></label>
+            <label>What are you planning? <span>*</span><select required value={formState.service} onChange={(e) => setFormState({ ...formState, service: e.target.value })}>{['Wedding Photography', 'Pre-Wedding Shoots', 'Birthday Photography', 'Events & Celebrations', 'Videography', 'Drone Shoot', 'Portrait & Family Photography', 'Kazima Album Making', 'Commercial / Institutional Photography', 'Other Enquiry'].map((item) => <option key={item}>{item}</option>)}</select></label>
+            <div className="form-row">
+              <label>Preferred date <span className="optional">(optional)</span><input type="date" value={formState.event_date} onChange={(e) => setFormState({ ...formState, event_date: e.target.value })} /></label>
+              <label>Event location <span className="optional">(optional)</span><input maxLength={200} value={formState.event_location} onChange={(e) => setFormState({ ...formState, event_location: e.target.value })} placeholder="City or venue" /></label>
+            </div>
+            <label>Tell us a little more <span className="optional">(optional)</span><textarea rows={3} maxLength={5000} value={formState.message} onChange={(e) => setFormState({ ...formState, message: e.target.value })} placeholder="Your plans, the kind of coverage you need…" /></label>
+            {formError && <div className="form-alert form-alert-error" role="alert">{formError}{isSupabaseConfigured && <button type="button" onClick={() => openWhatsApp(formState.service, 'Name: ' + formState.full_name + '\nPhone: ' + formState.phone + '\nMessage: ' + formState.message)}>Continue with WhatsApp <ArrowUpRight size={14} /></button>}</div>}
+            {formMessage && <div className="form-alert form-alert-success" role="status"><Check size={16} />{formMessage}</div>}
+            <button type="submit" className="button button-dark submit-button" disabled={sending}>{sending ? 'Sending enquiry…' : (isSupabaseConfigured ? 'Send enquiry' : 'Continue to WhatsApp')} <Send size={15} /></button>
+            <p className="privacy-note">Your details are used only to respond to this enquiry. Sending an enquiry does not confirm a booking.</p>
+          </form>
+        </section>
+      </main>
+
+      <footer className="site-footer">
+        <div className="footer-main">
+          <div className="footer-brand"><a href="#home" className="wordmark footer-wordmark"><span className="wordmark-icon"><Aperture size={25} strokeWidth={1.3} /></span><span><strong>MEERA</strong><small>PHOTO STUDIO</small></span></a><p>Preserving moments.<br />Creating legacies.</p><span className="footer-location"><MapPin size={14} /> RAIPUR, CHHATTISGARH, INDIA</span></div>
+          <div className="footer-nav"><span className="footer-label">EXPLORE</span><a href="#about">About the studio</a><a href="#services">Photography services</a><a href="#portfolio">Portfolio</a><a href="#albums">Kazima Albums</a><a href="#films">Videography</a></div>
+          <div className="footer-nav"><span className="footer-label">GET IN TOUCH</span><a href={'tel:' + (siteConfig.phone || PHONE_DISPLAY).replace(/[^+\d]/g, '')}>{siteConfig.phone || PHONE_DISPLAY}</a><a href={'mailto:' + (siteConfig.email || EMAIL_ADDRESS)}>{siteConfig.email || EMAIL_ADDRESS}</a><a href={wa('a photography booking')} target="_blank" rel="noreferrer">WhatsApp enquiries <ArrowUpRight size={13} /></a><span className="footer-open">Bookings open for 2026–27 enquiries</span></div>
+        </div>
+        <div className="footer-associations"><span>PROFESSIONAL ASSOCIATIONS</span><p>Sports & Youth Welfare <i>·</i> C.G. Olympic Association <i>·</i> Public Work Devison <i>·</i> CG Cricket Asso.</p></div>
+        <div className="footer-bottom"><span>© {new Date().getFullYear()} MEERA PHOTO STUDIO. ALL RIGHTS RESERVED.</span><span>PHOTOGRAPHY WITH PURPOSE, SINCE DAY ONE.</span><a href="/admin">STUDIO ADMIN <ArrowUpRight size={12} /></a></div>
+      </footer>
+
+      <a className="whatsapp-float" href={wa('a photography booking')} target="_blank" rel="noreferrer" aria-label="Contact Meera Photo Studio on WhatsApp"><MessageCircle size={21} /><span>Let's talk</span></a>
+
+      <AnimatePresence>
+        {lightboxPhoto && <motion.div className="lightbox" role="dialog" aria-modal="true" aria-label="Portfolio image viewer" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setLightboxIndex(null)}>
+          <button className="lightbox-close" onClick={() => setLightboxIndex(null)} aria-label="Close image viewer"><X size={25} /></button>
+          <button className="lightbox-arrow lightbox-prev" aria-label="Previous photo" onClick={(e) => { e.stopPropagation(); setLightboxIndex((index) => index === null ? null : (index - 1 + visiblePhotos.length) % visiblePhotos.length); }}><ChevronLeft size={28} /></button>
+          <figure onClick={(e) => e.stopPropagation()}><img src={lightboxPhoto.image_url} alt={lightboxPhoto.alt_text || lightboxPhoto.title} /><figcaption><span>{lightboxPhoto.category}</span><strong>{lightboxPhoto.title}</strong><small>{(lightboxIndex ?? 0) + 1} / {visiblePhotos.length}</small></figcaption></figure>
+          <button className="lightbox-arrow lightbox-next" aria-label="Next photo" onClick={(e) => { e.stopPropagation(); setLightboxIndex((index) => index === null ? null : (index + 1) % visiblePhotos.length); }}><ChevronRight size={28} /></button>
+        </motion.div>}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function AdminPage() {
+  const [checking, setChecking] = useState(true);
+  const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
+  const [accessDenied, setAccessDenied] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
+  const [working, setWorking] = useState(false);
+  const [tab, setTab] = useState<'gallery' | 'videos' | 'enquiries' | 'content'>('gallery');
+  const [photos, setPhotos] = useState<GalleryItem[]>([]);
+  const [videos, setVideos] = useState<VideoProject[]>([]);
+  const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
+  const [adminMessage, setAdminMessage] = useState('');
+  const [formTitle, setFormTitle] = useState('');
+  const [formCaption, setFormCaption] = useState('');
+  const [formCategory, setFormCategory] = useState('Weddings');
+  const [formAlt, setFormAlt] = useState('');
+  const [formFeatured, setFormFeatured] = useState(false);
+  const [formPublish, setFormPublish] = useState(true);
+  const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
+  const [videoTitle, setVideoTitle] = useState('');
+  const [videoDescription, setVideoDescription] = useState('');
+  const [videoCategory, setVideoCategory] = useState('Wedding Films');
+  const [videoUrl, setVideoUrl] = useState('');
+  const [videoPoster, setVideoPoster] = useState('');
+  const [videoPublish, setVideoPublish] = useState(true);
+  const [homepageConfig, setHomepageConfig] = useState<SiteConfig>(defaultConfig);
+
+  const loadAdminData = async () => {
+    const client = supabase;
+    if (!client) return;
+    const [gallery, videoResult, enquiryResult, siteResult] = await Promise.all([
+      client.from('gallery_items').select('*').order('position', { ascending: true }),
+      client.from('video_projects').select('*').order('position', { ascending: true }),
+      client.from('enquiries').select('*').order('created_at', { ascending: false }).limit(200),
+      client.from('site_settings').select('key,value').eq('key', 'homepage').maybeSingle(),
+    ]);
+    if (gallery.error) setAdminMessage('Gallery: ' + gallery.error.message);
+    else setPhotos((gallery.data || []) as GalleryItem[]);
+    if (!videoResult.error) setVideos((videoResult.data || []) as VideoProject[]);
+    if (!enquiryResult.error) setEnquiries((enquiryResult.data || []) as Enquiry[]);
+    if (siteResult.data?.value) setHomepageConfig({ ...defaultConfig, ...(siteResult.data.value as Partial<SiteConfig>) });
+  };
+
+  const checkAdmin = async (userId: string, userEmail?: string) => {
+    const client = supabase;
+    if (!client) return;
+    const { data, error } = await client.from('admins').select('user_id').eq('user_id', userId).maybeSingle();
+    if (error || !data) {
+      setAccessDenied(true);
+      setUser(null);
+      setLoginError('This account is signed in but is not registered as a studio administrator. Add its user UUID to the public.admins table in Supabase.');
+      setChecking(false);
+      return;
+    }
+    setUser({ id: userId, email: userEmail });
+    setAccessDenied(false);
+    await loadAdminData();
+    setChecking(false);
+  };
+
+  useEffect(() => {
+    const client = supabase;
+    if (!client) { setChecking(false); return; }
+    let alive = true;
+    client.auth.getSession().then(async ({ data }) => {
+      if (!alive) return;
+      if (data.session?.user) await checkAdmin(data.session.user.id, data.session.user.email);
+      else setChecking(false);
+    });
+    const { data: listener } = client.auth.onAuthStateChange((_event, session) => {
+      if (!alive) return;
+      if (session?.user) void checkAdmin(session.user.id, session.user.email);
+      else { setUser(null); setChecking(false); }
+    });
+    return () => { alive = false; listener.subscription.unsubscribe(); };
+  }, []);
+
+  async function signIn(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const client = supabase;
+    if (!client) return;
+    setWorking(true);
+    setLoginError('');
+    const { error } = await client.auth.signInWithPassword({ email, password });
+    if (error) setLoginError(error.message);
+    setWorking(false);
+  }
+
+  async function uploadPhotos(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const client = supabase;
+    if (!client || !selectedFiles?.length) { setAdminMessage('Choose one or more photographs to upload.'); return; }
+    setWorking(true);
+    setAdminMessage('');
+    const supportedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'];
+    try {
+      const newRows: Partial<GalleryItem>[] = [];
+      for (const file of Array.from(selectedFiles)) {
+        if (!supportedTypes.includes(file.type)) throw new Error(file.name + ' is not a supported image type. Use JPG, PNG, WEBP or AVIF.');
+        if (file.size > 15 * 1024 * 1024) throw new Error(file.name + ' is larger than the 15 MB upload limit.');
+        const safeName = file.name.toLowerCase().replace(/[^a-z0-9._-]/g, '-');
+        const storagePath = Date.now() + '-' + Math.random().toString(36).slice(2, 8) + '-' + safeName;
+        const { error: uploadError } = await client.storage.from('portfolio').upload(storagePath, file, { cacheControl: '3600', upsert: false, contentType: file.type });
+        if (uploadError) throw uploadError;
+        const { data: publicData } = client.storage.from('portfolio').getPublicUrl(storagePath);
+        newRows.push({
+          title: formTitle.trim() || file.name.replace(/\.[^.]+$/, ''),
+          caption: formCaption.trim() || null,
+          category: formCategory,
+          image_url: publicData.publicUrl,
+          storage_path: storagePath,
+          alt_text: formAlt.trim() || formTitle.trim() || file.name,
+          is_published: formPublish,
+          is_featured: formFeatured,
+          position: photos.length + newRows.length,
+        } as Partial<GalleryItem>);
+      }
+      const { error: insertError } = await client.from('gallery_items').insert(newRows);
+      if (insertError) throw insertError;
+      setAdminMessage(newRows.length + ' photograph(s) uploaded successfully.');
+      setFormTitle(''); setFormCaption(''); setFormAlt(''); setSelectedFiles(null); setFormFeatured(false);
+      const fileInput = document.getElementById('admin-photo-files') as HTMLInputElement | null;
+      if (fileInput) fileInput.value = '';
+      await loadAdminData();
+    } catch (error) {
+      setAdminMessage('Upload did not finish: ' + (error instanceof Error ? error.message : String(error)));
+    } finally { setWorking(false); }
+  }
+
+  async function togglePhoto(photo: GalleryItem) {
+    const client = supabase;
+    if (!client || photo.id.startsWith('sample-')) return;
+    const { error } = await client.from('gallery_items').update({ is_published: !photo.is_published }).eq('id', photo.id);
+    setAdminMessage(error ? error.message : (photo.is_published ? 'Photograph unpublished.' : 'Photograph published.'));
+    await loadAdminData();
+  }
+
+  async function deletePhoto(photo: GalleryItem) {
+    const client = supabase;
+    if (!client || !window.confirm('Delete “' + photo.title + '”? This cannot be undone.')) return;
+    const row = photo as GalleryItem & { storage_path?: string | null };
+    if (row.storage_path) {
+      const { error: storageError } = await client.storage.from('portfolio').remove([row.storage_path]);
+      if (storageError) { setAdminMessage('Image storage delete failed: ' + storageError.message); return; }
+    }
+    const { error } = await client.from('gallery_items').delete().eq('id', photo.id);
+    setAdminMessage(error ? error.message : 'Photograph deleted.');
+    await loadAdminData();
+  }
+
+  async function addVideo(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const client = supabase;
+    if (!client) return;
+    setWorking(true);
+    const { error } = await client.from('video_projects').insert([{
+      title: videoTitle.trim(), description: videoDescription.trim() || null, category: videoCategory,
+      video_url: videoUrl.trim(), poster_url: videoPoster.trim() || null, is_published: videoPublish, position: videos.length,
+    }]);
+    setAdminMessage(error ? 'Could not add video: ' + error.message : 'Video project saved.');
+    if (!error) { setVideoTitle(''); setVideoDescription(''); setVideoUrl(''); setVideoPoster(''); await loadAdminData(); }
+    setWorking(false);
+  }
+
+  async function toggleVideo(video: VideoProject) {
+    const client = supabase;
+    if (!client) return;
+    const { error } = await client.from('video_projects').update({ is_published: !video.is_published }).eq('id', video.id);
+    setAdminMessage(error ? error.message : 'Video visibility updated.');
+    await loadAdminData();
+  }
+
+  async function deleteVideo(video: VideoProject) {
+    const client = supabase;
+    if (!client || !window.confirm('Delete “' + video.title + '”?')) return;
+    const { error } = await client.from('video_projects').delete().eq('id', video.id);
+    setAdminMessage(error ? error.message : 'Video project deleted.');
+    await loadAdminData();
+  }
+
+  async function updateEnquiryStatus(enquiry: Enquiry, status: Enquiry['status']) {
+    const client = supabase;
+    if (!client) return;
+    const { error } = await client.from('enquiries').update({ status }).eq('id', enquiry.id);
+    setAdminMessage(error ? error.message : 'Enquiry status updated.');
+    await loadAdminData();
+  }
+
+  async function deleteEnquiry(enquiry: Enquiry) {
+    const client = supabase;
+    if (!client || !window.confirm('Delete this enquiry from ' + enquiry.full_name + '?')) return;
+    const { error } = await client.from('enquiries').delete().eq('id', enquiry.id);
+    setAdminMessage(error ? error.message : 'Enquiry deleted.');
+    await loadAdminData();
+  }
+
+  async function saveHomepage(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const client = supabase;
+    if (!client) return;
+    setWorking(true);
+    const { error } = await client.from('site_settings').upsert({ key: 'homepage', value: homepageConfig, updated_at: new Date().toISOString() });
+    setAdminMessage(error ? 'Could not save website content: ' + error.message : 'Homepage content saved.');
+    setWorking(false);
+  }
+
+  async function signOut() {
+    const client = supabase;
+    if (client) await client.auth.signOut();
+    setUser(null);
+  }
+
+  if (!isSupabaseConfigured) return <div className="admin-setup-page">
+    <a className="wordmark admin-wordmark" href="/"><span className="wordmark-icon"><Aperture size={24} /></span><span><strong>MEERA</strong><small>STUDIO ADMIN</small></span></a>
+    <div className="admin-setup-card"><span className="admin-eyebrow">ADMIN SETUP</span><h1>Your studio,<br /><em>your stories.</em></h1><p>The admin dashboard is included, but secure sign-in and persistent uploads require a Supabase project to be connected first.</p><ol><li>Add your project URL and anon key to the local environment using .env.example.</li><li>Run supabase/schema.sql in the Supabase SQL Editor.</li><li>Create your admin user in Supabase Authentication and add its UUID to public.admins.</li></ol><a className="button button-dark" href="https://supabase.com/dashboard" target="_blank" rel="noreferrer">Open Supabase <ArrowUpRight size={16} /></a><a className="admin-back-link" href="/">← Back to the website</a></div>
+  </div>;
+
+  if (checking) return <div className="admin-loading"><span className="loader" /> Checking secure studio access…</div>;
+  if (!user) return <div className="admin-setup-page"><a className="wordmark admin-wordmark" href="/"><span className="wordmark-icon"><Aperture size={24} /></span><span><strong>MEERA</strong><small>STUDIO ADMIN</small></span></a><form className="admin-login-card" onSubmit={signIn}><span className="admin-eyebrow">PRIVATE STUDIO AREA</span><h1>Welcome<br /><em>back.</em></h1><p>Sign in with your authorised studio administrator account.</p><label>Email address<input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="username" /></label><label>Password<input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" /></label>{loginError && <div className="form-alert form-alert-error" role="alert">{loginError}</div>}<button className="button button-dark admin-login-submit" type="submit" disabled={working}>{working ? 'Signing in…' : 'Sign in securely'} <ArrowRight size={16} /></button><a className="admin-back-link" href="/">← Back to the website</a></form></div>;
+
+  return <div className="dashboard">
+    <aside className="dashboard-sidebar"><a className="wordmark dashboard-wordmark" href="/"><span className="wordmark-icon"><Aperture size={23} /></span><span><strong>MEERA</strong><small>STUDIO ADMIN</small></span></a><div className="dashboard-side-caption">WORKSPACE</div><nav className="dashboard-nav">
+      <button className={tab === 'gallery' ? 'selected' : ''} onClick={() => setTab('gallery')}><Camera size={17} /> Photo gallery <span>{photos.length}</span></button>
+      <button className={tab === 'videos' ? 'selected' : ''} onClick={() => setTab('videos')}><Clapperboard size={17} /> Video projects <span>{videos.length}</span></button>
+      <button className={tab === 'enquiries' ? 'selected' : ''} onClick={() => setTab('enquiries')}><Mail size={17} /> Enquiries <span>{enquiries.filter((item) => item.status === 'New').length}</span></button>
+      <button className={tab === 'content' ? 'selected' : ''} onClick={() => setTab('content')}><Aperture size={17} /> Website content</button>
+    </nav><div className="dashboard-sidebar-bottom"><div className="online-indicator"><i /> Supabase connected</div><span>{user.email}</span><button onClick={signOut}>Sign out <ArrowUpRight size={13} /></button><a href="/">View public website ↗</a></div></aside>
+    <main className="dashboard-main"><header className="dashboard-topbar"><div><span className="admin-eyebrow">MEERA PHOTO STUDIO / ADMINISTRATION</span><h1>{tab === 'gallery' ? 'Photo gallery' : tab === 'videos' ? 'Video projects' : tab === 'enquiries' ? 'Bookings & enquiries' : 'Website content'}</h1></div><button className="dashboard-refresh" onClick={() => void loadAdminData()}><Clock3 size={15} /> Refresh data</button></header>
+      <div className="dashboard-welcome"><div><span className="welcome-mark"><Aperture size={20} /></span><div><strong>Good to see you in the studio.</strong><p>Keep the portfolio current and every enquiry in view.</p></div></div><span className="dashboard-private"><i /> PRIVATE DASHBOARD</span></div>
+      {adminMessage && <div className="admin-message" role="status">{adminMessage}<button onClick={() => setAdminMessage('')} aria-label="Dismiss message"><X size={14} /></button></div>}
+      {tab === 'gallery' && <div className="dashboard-content"><div className="dashboard-stats"><div><span>PUBLISHED PHOTOS</span><strong>{photos.filter((item) => item.is_published).length}</strong></div><div><span>ALL PHOTOS</span><strong>{photos.length}</strong></div><div><span>FEATURED PHOTOS</span><strong>{photos.filter((item) => item.is_featured).length}</strong></div></div>
+        <section className="dashboard-panel"><div className="panel-heading"><div><span className="admin-eyebrow">NEW CONTENT</span><h2>Upload photographs</h2><p>JPG, PNG, WEBP or AVIF · maximum 15 MB per image · multi-file upload supported.</p></div><span className="panel-icon"><Camera size={21} /></span></div>
+          <form className="admin-form" onSubmit={uploadPhotos}><label className="file-drop" htmlFor="admin-photo-files"><input id="admin-photo-files" type="file" accept="image/jpeg,image/png,image/webp,image/avif" multiple onChange={(e) => setSelectedFiles(e.target.files)} /><span className="file-drop-icon"><ArrowUpRight size={20} /></span><strong>{selectedFiles?.length ? selectedFiles.length + ' file(s) selected' : 'Choose photographs to upload'}</strong><small>Click to browse files from your device</small></label>
+            <div className="admin-form-grid"><label>Title (optional)<input value={formTitle} onChange={(e) => setFormTitle(e.target.value)} maxLength={160} placeholder="e.g. A Celebration of Love" /></label><label>Gallery category<select value={formCategory} onChange={(e) => setFormCategory(e.target.value)}>{categoryNames.slice(1).map((item) => <option key={item}>{item}</option>)}</select></label><label>Caption (optional)<input value={formCaption} onChange={(e) => setFormCaption(e.target.value)} maxLength={500} placeholder="A short note about the photograph" /></label><label>Alt text (optional)<input value={formAlt} onChange={(e) => setFormAlt(e.target.value)} maxLength={300} placeholder="Accessible image description" /></label></div>
+            <div className="admin-check-row"><label><input type="checkbox" checked={formFeatured} onChange={(e) => setFormFeatured(e.target.checked)} /> Mark as featured</label><label><input type="checkbox" checked={formPublish} onChange={(e) => setFormPublish(e.target.checked)} /> Publish immediately</label></div>
+            <button className="button button-dark" type="submit" disabled={working}>{working ? 'Uploading…' : 'Upload selected photos'} <ArrowUpRight size={15} /></button>
+          </form>
+        </section>
+        <section className="dashboard-panel"><div className="panel-heading"><div><span className="admin-eyebrow">LIBRARY</span><h2>Manage photographs</h2><p>Publish or unpublish images, or remove images you no longer need.</p></div><span className="panel-count">{photos.length} ITEMS</span></div>
+          {photos.length === 0 ? <div className="admin-empty"><Camera size={25} /><p>No photos uploaded yet. Your new portfolio starts here.</p></div> : <div className="admin-photo-list">{photos.map((photo) => <div className="admin-photo-row" key={photo.id}><img src={photo.image_url} alt="" /><div className="admin-photo-info"><strong>{photo.title}</strong><span>{photo.category}{photo.is_featured ? ' · Featured' : ''}</span></div><span className={photo.is_published ? 'status-pill status-published' : 'status-pill'}>{photo.is_published ? 'Published' : 'Draft'}</span><button className="small-action" onClick={() => void togglePhoto(photo)}>{photo.is_published ? 'Unpublish' : 'Publish'}</button><button className="small-action danger-action" onClick={() => void deletePhoto(photo)}>Delete</button></div>)}</div>}
+        </section>
+      </div>}
+      {tab === 'videos' && <div className="dashboard-content"><section className="dashboard-panel"><div className="panel-heading"><div><span className="admin-eyebrow">FILM LIBRARY</span><h2>Add a video project</h2><p>Use a public video URL or embed-compatible share link. Public cards open the supplied URL.</p></div><span className="panel-icon"><Clapperboard size={21} /></span></div><form className="admin-form" onSubmit={addVideo}><div className="admin-form-grid"><label>Project title *<input required value={videoTitle} onChange={(e) => setVideoTitle(e.target.value)} maxLength={160} /></label><label>Category<select value={videoCategory} onChange={(e) => setVideoCategory(e.target.value)}>{['Wedding Films', 'Pre-Wedding Films', 'Event Highlights', 'Birthday Films', 'Drone Cinematography', 'Institutional / Sports', 'Cinematic Films'].map((x) => <option key={x}>{x}</option>)}</select></label><label>Video URL *<input required type="url" value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} placeholder="https://…" /></label><label>Poster image URL (optional)<input type="url" value={videoPoster} onChange={(e) => setVideoPoster(e.target.value)} placeholder="https://…" /></label></div><label>Description (optional)<textarea rows={2} value={videoDescription} onChange={(e) => setVideoDescription(e.target.value)} maxLength={1000} /></label><div className="admin-check-row"><label><input type="checkbox" checked={videoPublish} onChange={(e) => setVideoPublish(e.target.checked)} /> Publish immediately</label></div><button className="button button-dark" type="submit" disabled={working}>{working ? 'Saving…' : 'Save video project'} <ArrowUpRight size={15} /></button></form></section><section className="dashboard-panel"><div className="panel-heading"><div><span className="admin-eyebrow">CURRENT PROJECTS</span><h2>Manage video projects</h2></div><span className="panel-count">{videos.length} ITEMS</span></div>{videos.length === 0 ? <div className="admin-empty"><Clapperboard size={25} /><p>No video projects yet.</p></div> : <div className="admin-photo-list">{videos.map((video) => <div className="admin-photo-row" key={video.id}><img src={video.poster_url || demoPhotos[0].image_url} alt="" /><div className="admin-photo-info"><strong>{video.title}</strong><span>{video.category}</span></div><span className={video.is_published ? 'status-pill status-published' : 'status-pill'}>{video.is_published ? 'Published' : 'Draft'}</span><button className="small-action" onClick={() => void toggleVideo(video)}>{video.is_published ? 'Unpublish' : 'Publish'}</button><button className="small-action danger-action" onClick={() => void deleteVideo(video)}>Delete</button></div>)}</div>}</section></div>}
+      {tab === 'enquiries' && <div className="dashboard-content"><div className="dashboard-stats"><div><span>TOTAL ENQUIRIES LOADED</span><strong>{enquiries.length}</strong></div><div><span>NEW</span><strong>{enquiries.filter((item) => item.status === 'New').length}</strong></div><div><span>CONFIRMED</span><strong>{enquiries.filter((item) => item.status === 'Confirmed').length}</strong></div></div><section className="dashboard-panel"><div className="panel-heading"><div><span className="admin-eyebrow">CLIENT CONTACT</span><h2>Recent enquiries</h2><p>Private visitor information is visible only to authorised studio admins.</p></div><span className="panel-count">LATEST 200</span></div>{enquiries.length === 0 ? <div className="admin-empty"><Mail size={25} /><p>No enquiries have been received yet.</p></div> : <div className="enquiry-list">{enquiries.map((enquiry) => <article className="enquiry-row" key={enquiry.id}><div className="enquiry-top"><div><h3>{enquiry.full_name}</h3><span>{enquiry.service} · {new Date(enquiry.created_at).toLocaleString()}</span></div><select aria-label={'Status for ' + enquiry.full_name} value={enquiry.status} onChange={(e) => void updateEnquiryStatus(enquiry, e.target.value as Enquiry['status'])}>{['New', 'Contacted', 'In Discussion', 'Confirmed', 'Closed'].map((x) => <option key={x}>{x}</option>)}</select></div><div className="enquiry-meta"><a href={'tel:' + enquiry.phone}><Phone size={14} />{enquiry.phone}</a>{enquiry.email && <a href={'mailto:' + enquiry.email}><Mail size={14} />{enquiry.email}</a>}{enquiry.event_date && <span>Event date: {enquiry.event_date}</span>}{enquiry.event_location && <span>Location: {enquiry.event_location}</span>}</div>{enquiry.message && <p className="enquiry-message">{enquiry.message}</p>}<button className="small-action danger-action" onClick={() => void deleteEnquiry(enquiry)}>Delete enquiry</button></article>)}</div>}</section></div>}
+      {tab === 'content' && <div className="dashboard-content"><section className="dashboard-panel"><div className="panel-heading"><div><span className="admin-eyebrow">PUBLIC WEBSITE</span><h2>Homepage content</h2><p>Update the hero message, introductory copy and public contact information.</p></div><span className="panel-icon"><Aperture size={21} /></span></div><form className="admin-form" onSubmit={saveHomepage}><label>Hero heading<input value={homepageConfig.hero_title} onChange={(e) => setHomepageConfig({ ...homepageConfig, hero_title: e.target.value })} maxLength={180} /></label><label>Hero supporting text<textarea rows={3} value={homepageConfig.hero_subtitle} onChange={(e) => setHomepageConfig({ ...homepageConfig, hero_subtitle: e.target.value })} maxLength={800} /></label><label>About the studio<textarea rows={5} value={homepageConfig.about_text} onChange={(e) => setHomepageConfig({ ...homepageConfig, about_text: e.target.value })} maxLength={1800} /></label><div className="admin-form-grid"><label>Public phone<input value={homepageConfig.phone} onChange={(e) => setHomepageConfig({ ...homepageConfig, phone: e.target.value })} maxLength={40} /></label><label>Public email<input type="email" value={homepageConfig.email} onChange={(e) => setHomepageConfig({ ...homepageConfig, email: e.target.value })} maxLength={254} /></label><label>Location<input value={homepageConfig.location} onChange={(e) => setHomepageConfig({ ...homepageConfig, location: e.target.value })} maxLength={180} /></label></div><button className="button button-dark" type="submit" disabled={working}>{working ? 'Saving…' : 'Save homepage content'} <Check size={15} /></button></form></section><div className="content-hint"><Sparkles size={19} /><p>Public changes will load from Supabase as soon as the database is configured. Keep private details and all API secrets out of website content fields.</p></div></div>}
+      <footer className="dashboard-footer"><span>MEERA PHOTO STUDIO · PRIVATE ADMIN</span><span>Preserving moments, creating legacies.</span></footer>
+    </main>
+  </div>;
+}
+
+export default App;
