@@ -65,8 +65,8 @@ function PortfolioSite() {
   const reduceMotion = useReducedMotion();
   const [menuOpen, setMenuOpen] = useState(false);
   const [category, setCategory] = useState('All Work');
-  const [photos, setPhotos] = useState<GalleryItem[]>(demoPhotos);
-  const [usingDemoPhotos, setUsingDemoPhotos] = useState(true);
+  const [photos, setPhotos] = useState<GalleryItem[]>([]);
+  const [usingDemoPhotos, setUsingDemoPhotos] = useState(false);
   const [videos, setVideos] = useState<VideoProject[]>([]);
   const [serviceContent, setServiceContent] = useState(baseServices);
   const [siteConfig, setSiteConfig] = useState<SiteConfig>(defaultConfig);
@@ -199,8 +199,6 @@ function PortfolioSite() {
           <div className="hero-bottom"><span>01 — THE ART OF PRESENCE</span><a href="#about">SCROLL TO DISCOVER <ArrowDown size={14} /></a></div>
           <div className="hero-side-note">REAL MOMENTS. LASTING STORIES.</div>
         </section>
-
-        {usingDemoPhotos && <div className="preview-note"><span className="preview-dot" /> PREVIEW MODE — sample photographs are shown until the studio publishes its own portfolio images in the admin dashboard.</div>}
 
         <section className="intro section-pad" id="about">
           <div className="intro-meta"><span className="section-index">01 / ABOUT THE STUDIO</span><span className="vertical-rule" /></div>
