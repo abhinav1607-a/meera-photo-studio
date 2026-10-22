@@ -190,3 +190,13 @@ using (bucket_id = 'portfolio' and public.is_admin());
 --
 -- Production recommendation: add CAPTCHA/rate limiting (ideally an Edge Function) to
 -- public enquiry submission to reduce spam and abuse. Never expose the service-role key.
+
+-- Explicit table privileges complement RLS policies above.
+grant usage on schema public to anon, authenticated;
+grant select on table public.gallery_items, public.video_projects, public.services, public.site_settings to anon, authenticated;
+grant insert, update, delete on table public.gallery_items, public.video_projects, public.services, public.site_settings to authenticated;
+grant select on table public.admins to authenticated;
+grant insert on table public.enquiries to anon, authenticated;
+grant select, update, delete on table public.enquiries to authenticated;
+grant select on table storage.objects to anon, authenticated;
+grant insert, update, delete on table storage.objects to authenticated;
