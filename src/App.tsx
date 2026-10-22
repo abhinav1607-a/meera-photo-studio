@@ -406,7 +406,7 @@ function AdminPage() {
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
   const [working, setWorking] = useState(false);
-  const [tab, setTab] = useState<'gallery' | 'videos' | 'enquiries' | 'content'>('gallery');
+  const [tab, setTab] = useState<'gallery' | 'videos' | 'services' | 'enquiries' | 'content'>('gallery');
   const [photos, setPhotos] = useState<GalleryItem[]>([]);
   const [videos, setVideos] = useState<VideoProject[]>([]);
   const [services, setServices] = useState<ServiceRecord[]>([]);
