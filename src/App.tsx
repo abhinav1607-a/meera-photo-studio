@@ -348,6 +348,41 @@ function PortfolioSite() {
   );
 }
 
+function getEmbeddableVideoUrl(value: string): string | null {
+  try {
+    const parsed = new URL(value);
+    const host = parsed.hostname.replace(/^www\\./, '').toLowerCase();
+    if (host === 'youtu.be') {
+      const id = parsed.pathname.split('/').filter(Boolean)[0];
+      return id ? 'https://www.youtube-nocookie.com/embed/' + id + '?autoplay=1&rel=0' : null;
+    }
+    if (host === 'youtube.com' || host.endsWith('.youtube.com')) {
+      const pathParts = parsed.pathname.split('/').filter(Boolean);
+      const id = parsed.searchParams.get('v') || (['embed', 'shorts', 'live'].includes(pathParts[0] || '') ? pathParts[1] : null);
+      return id ? 'https://www.youtube-nocookie.com/embed/' + id + '?autoplay=1&rel=0' : null;
+    }
+    if (host === 'vimeo.com' || host.endsWith('.vimeo.com')) {
+      const id = parsed.pathname.split('/').filter(Boolean).pop();
+      if (id && /^\\d+$/.test(id)) return 'https://player.vimeo.com/video/' + id + '?autoplay=1';
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+function VideoPlayerModal({ video, onClose }: { video: VideoProject; onClose: () => void }) {
+  const embedUrl = getEmbeddableVideoUrl(video.video_url);
+  const isDirectVideo = /\\.(mp4|webm|ogg)(?:\\?.*)?$/i.test(video.video_url);
+  return <motion.div className="video-modal" role="dialog" aria-modal="true" aria-label={video.title} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}>
+    <button className="video-modal-close" onClick={onClose} aria-label="Close video player"><X size={24} /></button>
+    <div className="video-modal-content" onClick={(event) => event.stopPropagation()}>
+      {embedUrl ? <iframe src={embedUrl} title={video.title} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" /> : isDirectVideo ? <video src={video.video_url} controls autoPlay playsInline poster={video.poster_url || undefined}>Your browser does not support this video.</video> : <div className="video-external-fallback"><Play size={27} /><h3>Watch the film</h3><p>This project uses an external video link that cannot be embedded here.</p><a className="button button-light" href={video.video_url} target="_blank" rel="noreferrer">Open video externally <ArrowUpRight size={15} /></a></div>}
+      <div className="video-modal-caption"><span>{video.category}</span><h2>{video.title}</h2>{video.description && <p>{video.description}</p>}</div>
+    </div>
+  </motion.div>;
+}
+
 function AdminPage() {
   const [checking, setChecking] = useState(true);
   const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
@@ -359,6 +394,7 @@ function AdminPage() {
   const [tab, setTab] = useState<'gallery' | 'videos' | 'enquiries' | 'content'>('gallery');
   const [photos, setPhotos] = useState<GalleryItem[]>([]);
   const [videos, setVideos] = useState<VideoProject[]>([]);
+  const [services, setServices] = useState<ServiceRecord[]>([]);
   const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
   const [adminMessage, setAdminMessage] = useState('');
   const [formTitle, setFormTitle] = useState('');
@@ -374,20 +410,27 @@ function AdminPage() {
   const [videoUrl, setVideoUrl] = useState('');
   const [videoPoster, setVideoPoster] = useState('');
   const [videoPublish, setVideoPublish] = useState(true);
+  const [serviceTitle, setServiceTitle] = useState('');
+  const [serviceDescription, setServiceDescription] = useState('');
+  const [serviceImage, setServiceImage] = useState('');
+  const [servicePublish, setServicePublish] = useState(true);
+  const [editingServiceId, setEditingServiceId] = useState<string | null>(null);
   const [homepageConfig, setHomepageConfig] = useState<SiteConfig>(defaultConfig);
 
   const loadAdminData = async () => {
     const client = supabase;
     if (!client) return;
-    const [gallery, videoResult, enquiryResult, siteResult] = await Promise.all([
+    const [gallery, videoResult, serviceResult, enquiryResult, siteResult] = await Promise.all([
       client.from('gallery_items').select('*').order('position', { ascending: true }),
       client.from('video_projects').select('*').order('position', { ascending: true }),
+      client.from('services').select('*').order('position', { ascending: true }),
       client.from('enquiries').select('*').order('created_at', { ascending: false }).limit(200),
       client.from('site_settings').select('key,value').eq('key', 'homepage').maybeSingle(),
     ]);
     if (gallery.error) setAdminMessage('Gallery: ' + gallery.error.message);
     else setPhotos((gallery.data || []) as GalleryItem[]);
     if (!videoResult.error) setVideos((videoResult.data || []) as VideoProject[]);
+    if (!serviceResult.error) setServices((serviceResult.data || []) as ServiceRecord[]);
     if (!enquiryResult.error) setEnquiries((enquiryResult.data || []) as Enquiry[]);
     if (siteResult.data?.value) setHomepageConfig({ ...defaultConfig, ...(siteResult.data.value as Partial<SiteConfig>) });
   };
@@ -529,6 +572,77 @@ function AdminPage() {
     await loadAdminData();
   }
 
+  async function saveService(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const client = supabase;
+    if (!client) return;
+    const payload = { title: serviceTitle.trim(), description: serviceDescription.trim(), image_url: serviceImage.trim() || null, is_published: servicePublish, position: editingServiceId ? (services.find((item) => item.id === editingServiceId)?.position ?? 0) : services.length, updated_at: new Date().toISOString() };
+    if (!payload.title || !payload.description) { setAdminMessage('Enter a service title and description.'); return; }
+    setWorking(true);
+    const result = editingServiceId
+      ? await client.from('services').update(payload).eq('id', editingServiceId)
+      : await client.from('services').insert([payload]);
+    setAdminMessage(result.error ? 'Could not save service: ' + result.error.message : (editingServiceId ? 'Service updated.' : 'Service added.'));
+    if (!result.error) {
+      setServiceTitle(''); setServiceDescription(''); setServiceImage(''); setServicePublish(true); setEditingServiceId(null);
+      await loadAdminData();
+    }
+    setWorking(false);
+  }
+
+  function editService(service: ServiceRecord) {
+    setEditingServiceId(service.id);
+    setServiceTitle(service.title);
+    setServiceDescription(service.description);
+    setServiceImage(service.image_url || '');
+    setServicePublish(service.is_published);
+    setAdminMessage('Editing “' + service.title + '”. Save the form to apply your changes.');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  async function toggleService(service: ServiceRecord) {
+    const client = supabase;
+    if (!client) return;
+    const { error } = await client.from('services').update({ is_published: !service.is_published, updated_at: new Date().toISOString() }).eq('id', service.id);
+    setAdminMessage(error ? error.message : 'Service visibility updated.');
+    await loadAdminData();
+  }
+
+  async function deleteService(service: ServiceRecord) {
+    const client = supabase;
+    if (!client || !window.confirm('Delete the service “' + service.title + '”?')) return;
+    const { error } = await client.from('services').delete().eq('id', service.id);
+    setAdminMessage(error ? error.message : 'Service deleted.');
+    await loadAdminData();
+  }
+
+  async function replacePhoto(photo: GalleryItem, file?: File) {
+    const client = supabase;
+    if (!client || !file) return;
+    if (!['image/jpeg', 'image/png', 'image/webp', 'image/avif'].includes(file.type) || file.size > 15 * 1024 * 1024) {
+      setAdminMessage('Choose a JPG, PNG, WEBP or AVIF image under 15 MB.');
+      return;
+    }
+    setWorking(true);
+    const oldRow = photo as GalleryItem & { storage_path?: string | null };
+    const safeName = file.name.toLowerCase().replace(/[^a-z0-9._-]/g, '-');
+    const storagePath = Date.now() + '-' + Math.random().toString(36).slice(2, 8) + '-' + safeName;
+    const { error: uploadError } = await client.storage.from('portfolio').upload(storagePath, file, { cacheControl: '3600', upsert: false, contentType: file.type });
+    if (uploadError) { setAdminMessage('Replacement upload failed: ' + uploadError.message); setWorking(false); return; }
+    const { data } = client.storage.from('portfolio').getPublicUrl(storagePath);
+    const { error } = await client.from('gallery_items').update({ image_url: data.publicUrl, storage_path: storagePath, alt_text: file.name }).eq('id', photo.id);
+    if (error) {
+      await client.storage.from('portfolio').remove([storagePath]);
+      setAdminMessage('Could not update the gallery record: ' + error.message);
+      setWorking(false);
+      return;
+    }
+    if (oldRow.storage_path) await client.storage.from('portfolio').remove([oldRow.storage_path]);
+    setAdminMessage('Photograph replaced successfully.');
+    await loadAdminData();
+    setWorking(false);
+  }
+
   async function updateEnquiryStatus(enquiry: Enquiry, status: Enquiry['status']) {
     const client = supabase;
     if (!client) return;
@@ -573,10 +687,11 @@ function AdminPage() {
     <aside className="dashboard-sidebar"><a className="wordmark dashboard-wordmark" href="/"><span className="wordmark-icon"><Aperture size={23} /></span><span><strong>MEERA</strong><small>STUDIO ADMIN</small></span></a><div className="dashboard-side-caption">WORKSPACE</div><nav className="dashboard-nav">
       <button className={tab === 'gallery' ? 'selected' : ''} onClick={() => setTab('gallery')}><Camera size={17} /> Photo gallery <span>{photos.length}</span></button>
       <button className={tab === 'videos' ? 'selected' : ''} onClick={() => setTab('videos')}><Clapperboard size={17} /> Video projects <span>{videos.length}</span></button>
+      <button className={tab === 'services' ? 'selected' : ''} onClick={() => setTab('services')}><Camera size={17} /> Services <span>{services.length}</span></button>
       <button className={tab === 'enquiries' ? 'selected' : ''} onClick={() => setTab('enquiries')}><Mail size={17} /> Enquiries <span>{enquiries.filter((item) => item.status === 'New').length}</span></button>
       <button className={tab === 'content' ? 'selected' : ''} onClick={() => setTab('content')}><Aperture size={17} /> Website content</button>
     </nav><div className="dashboard-sidebar-bottom"><div className="online-indicator"><i /> Supabase connected</div><span>{user.email}</span><button onClick={signOut}>Sign out <ArrowUpRight size={13} /></button><a href="/">View public website ↗</a></div></aside>
-    <main className="dashboard-main"><header className="dashboard-topbar"><div><span className="admin-eyebrow">MEERA PHOTO STUDIO / ADMINISTRATION</span><h1>{tab === 'gallery' ? 'Photo gallery' : tab === 'videos' ? 'Video projects' : tab === 'enquiries' ? 'Bookings & enquiries' : 'Website content'}</h1></div><button className="dashboard-refresh" onClick={() => void loadAdminData()}><Clock3 size={15} /> Refresh data</button></header>
+    <main className="dashboard-main"><header className="dashboard-topbar"><div><span className="admin-eyebrow">MEERA PHOTO STUDIO / ADMINISTRATION</span><h1>{tab === 'gallery' ? 'Photo gallery' : tab === 'videos' ? 'Video projects' : tab === 'services' ? 'Photography services' : tab === 'enquiries' ? 'Bookings & enquiries' : 'Website content'}</h1></div><button className="dashboard-refresh" onClick={() => void loadAdminData()}><Clock3 size={15} /> Refresh data</button></header>
       <div className="dashboard-welcome"><div><span className="welcome-mark"><Aperture size={20} /></span><div><strong>Good to see you in the studio.</strong><p>Keep the portfolio current and every enquiry in view.</p></div></div><span className="dashboard-private"><i /> PRIVATE DASHBOARD</span></div>
       {adminMessage && <div className="admin-message" role="status">{adminMessage}<button onClick={() => setAdminMessage('')} aria-label="Dismiss message"><X size={14} /></button></div>}
       {tab === 'gallery' && <div className="dashboard-content"><div className="dashboard-stats"><div><span>PUBLISHED PHOTOS</span><strong>{photos.filter((item) => item.is_published).length}</strong></div><div><span>ALL PHOTOS</span><strong>{photos.length}</strong></div><div><span>FEATURED PHOTOS</span><strong>{photos.filter((item) => item.is_featured).length}</strong></div></div>
@@ -588,12 +703,13 @@ function AdminPage() {
           </form>
         </section>
         <section className="dashboard-panel"><div className="panel-heading"><div><span className="admin-eyebrow">LIBRARY</span><h2>Manage photographs</h2><p>Publish or unpublish images, or remove images you no longer need.</p></div><span className="panel-count">{photos.length} ITEMS</span></div>
-          {photos.length === 0 ? <div className="admin-empty"><Camera size={25} /><p>No photos uploaded yet. Your new portfolio starts here.</p></div> : <div className="admin-photo-list">{photos.map((photo) => <div className="admin-photo-row" key={photo.id}><img src={photo.image_url} alt="" /><div className="admin-photo-info"><strong>{photo.title}</strong><span>{photo.category}{photo.is_featured ? ' · Featured' : ''}</span></div><span className={photo.is_published ? 'status-pill status-published' : 'status-pill'}>{photo.is_published ? 'Published' : 'Draft'}</span><button className="small-action" onClick={() => void togglePhoto(photo)}>{photo.is_published ? 'Unpublish' : 'Publish'}</button><button className="small-action danger-action" onClick={() => void deletePhoto(photo)}>Delete</button></div>)}</div>}
+          {photos.length === 0 ? <div className="admin-empty"><Camera size={25} /><p>No photos uploaded yet. Your new portfolio starts here.</p></div> : <div className="admin-photo-list">{photos.map((photo) => <div className="admin-photo-row" key={photo.id}><img src={photo.image_url} alt="" /><div className="admin-photo-info"><strong>{photo.title}</strong><span>{photo.category}{photo.is_featured ? ' · Featured' : ''}</span></div><span className={photo.is_published ? 'status-pill status-published' : 'status-pill'}>{photo.is_published ? 'Published' : 'Draft'}</span><label className="small-action replace-action">Replace<input type="file" accept="image/jpeg,image/png,image/webp,image/avif" disabled={working || photo.id.startsWith('sample-')} onChange={(e) => { const file = e.target.files?.[0]; if (file) void replacePhoto(photo, file); e.currentTarget.value = ''; }} /></label><button className="small-action" onClick={() => void togglePhoto(photo)} disabled={photo.id.startsWith('sample-')}>{photo.is_published ? 'Unpublish' : 'Publish'}</button><button className="small-action danger-action" onClick={() => void deletePhoto(photo)} disabled={photo.id.startsWith('sample-')}>Delete</button></div>)}</div>}
         </section>
       </div>}
       {tab === 'videos' && <div className="dashboard-content"><section className="dashboard-panel"><div className="panel-heading"><div><span className="admin-eyebrow">FILM LIBRARY</span><h2>Add a video project</h2><p>Use a public video URL or embed-compatible share link. Public cards open the supplied URL.</p></div><span className="panel-icon"><Clapperboard size={21} /></span></div><form className="admin-form" onSubmit={addVideo}><div className="admin-form-grid"><label>Project title *<input required value={videoTitle} onChange={(e) => setVideoTitle(e.target.value)} maxLength={160} /></label><label>Category<select value={videoCategory} onChange={(e) => setVideoCategory(e.target.value)}>{['Wedding Films', 'Pre-Wedding Films', 'Event Highlights', 'Birthday Films', 'Drone Cinematography', 'Institutional / Sports', 'Cinematic Films'].map((x) => <option key={x}>{x}</option>)}</select></label><label>Video URL *<input required type="url" value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} placeholder="https://…" /></label><label>Poster image URL (optional)<input type="url" value={videoPoster} onChange={(e) => setVideoPoster(e.target.value)} placeholder="https://…" /></label></div><label>Description (optional)<textarea rows={2} value={videoDescription} onChange={(e) => setVideoDescription(e.target.value)} maxLength={1000} /></label><div className="admin-check-row"><label><input type="checkbox" checked={videoPublish} onChange={(e) => setVideoPublish(e.target.checked)} /> Publish immediately</label></div><button className="button button-dark" type="submit" disabled={working}>{working ? 'Saving…' : 'Save video project'} <ArrowUpRight size={15} /></button></form></section><section className="dashboard-panel"><div className="panel-heading"><div><span className="admin-eyebrow">CURRENT PROJECTS</span><h2>Manage video projects</h2></div><span className="panel-count">{videos.length} ITEMS</span></div>{videos.length === 0 ? <div className="admin-empty"><Clapperboard size={25} /><p>No video projects yet.</p></div> : <div className="admin-photo-list">{videos.map((video) => <div className="admin-photo-row" key={video.id}><img src={video.poster_url || demoPhotos[0].image_url} alt="" /><div className="admin-photo-info"><strong>{video.title}</strong><span>{video.category}</span></div><span className={video.is_published ? 'status-pill status-published' : 'status-pill'}>{video.is_published ? 'Published' : 'Draft'}</span><button className="small-action" onClick={() => void toggleVideo(video)}>{video.is_published ? 'Unpublish' : 'Publish'}</button><button className="small-action danger-action" onClick={() => void deleteVideo(video)}>Delete</button></div>)}</div>}</section></div>}
+      {tab === 'services' && <div className="dashboard-content"><section className="dashboard-panel"><div className="panel-heading"><div><span className="admin-eyebrow">SERVICE CATALOGUE</span><h2>{editingServiceId ? 'Edit service' : 'Add a service'}</h2><p>Published services replace the default homepage list. Add an image URL from your public storage or other hosted image location.</p></div><span className="panel-icon"><Camera size={21} /></span></div><form className="admin-form" onSubmit={saveService}><label>Service title *<input required value={serviceTitle} onChange={(e) => setServiceTitle(e.target.value)} maxLength={150} placeholder="e.g. Wedding Photography" /></label><label>Description *<textarea required rows={3} value={serviceDescription} onChange={(e) => setServiceDescription(e.target.value)} maxLength={1000} placeholder="Describe the service" /></label><label>Image URL (optional)<input type="url" value={serviceImage} onChange={(e) => setServiceImage(e.target.value)} placeholder="https://…" /></label><div className="admin-check-row"><label><input type="checkbox" checked={servicePublish} onChange={(e) => setServicePublish(e.target.checked)} /> Publish service</label></div><div className="service-editor-buttons"><button className="button button-dark" type="submit" disabled={working}>{working ? 'Saving…' : editingServiceId ? 'Save service changes' : 'Add service'} <Check size={15} /></button>{editingServiceId && <button className="small-action" type="button" onClick={() => { setEditingServiceId(null); setServiceTitle(''); setServiceDescription(''); setServiceImage(''); setServicePublish(true); }}>Cancel edit</button>}</div></form></section><section className="dashboard-panel"><div className="panel-heading"><div><span className="admin-eyebrow">CURRENT SERVICES</span><h2>Manage services</h2><p>Control what visitors see on the public homepage.</p></div><span className="panel-count">{services.length} ITEMS</span></div>{services.length === 0 ? <div className="admin-empty"><Camera size={25} /><p>No custom services yet. The public site uses its built-in starter service list until you add your own.</p></div> : <div className="admin-photo-list">{services.map((service) => <div className="admin-photo-row service-admin-row" key={service.id}><img src={service.image_url || demoPhotos[0].image_url} alt="" /><div className="admin-photo-info"><strong>{service.title}</strong><span>{service.description}</span></div><span className={service.is_published ? 'status-pill status-published' : 'status-pill'}>{service.is_published ? 'Published' : 'Draft'}</span><button className="small-action" onClick={() => editService(service)}>Edit</button><button className="small-action" onClick={() => void toggleService(service)}>{service.is_published ? 'Unpublish' : 'Publish'}</button><button className="small-action danger-action" onClick={() => void deleteService(service)}>Delete</button></div>)}</div>}</section></div>}
       {tab === 'enquiries' && <div className="dashboard-content"><div className="dashboard-stats"><div><span>TOTAL ENQUIRIES LOADED</span><strong>{enquiries.length}</strong></div><div><span>NEW</span><strong>{enquiries.filter((item) => item.status === 'New').length}</strong></div><div><span>CONFIRMED</span><strong>{enquiries.filter((item) => item.status === 'Confirmed').length}</strong></div></div><section className="dashboard-panel"><div className="panel-heading"><div><span className="admin-eyebrow">CLIENT CONTACT</span><h2>Recent enquiries</h2><p>Private visitor information is visible only to authorised studio admins.</p></div><span className="panel-count">LATEST 200</span></div>{enquiries.length === 0 ? <div className="admin-empty"><Mail size={25} /><p>No enquiries have been received yet.</p></div> : <div className="enquiry-list">{enquiries.map((enquiry) => <article className="enquiry-row" key={enquiry.id}><div className="enquiry-top"><div><h3>{enquiry.full_name}</h3><span>{enquiry.service} · {new Date(enquiry.created_at).toLocaleString()}</span></div><select aria-label={'Status for ' + enquiry.full_name} value={enquiry.status} onChange={(e) => void updateEnquiryStatus(enquiry, e.target.value as Enquiry['status'])}>{['New', 'Contacted', 'In Discussion', 'Confirmed', 'Closed'].map((x) => <option key={x}>{x}</option>)}</select></div><div className="enquiry-meta"><a href={'tel:' + enquiry.phone}><Phone size={14} />{enquiry.phone}</a>{enquiry.email && <a href={'mailto:' + enquiry.email}><Mail size={14} />{enquiry.email}</a>}{enquiry.event_date && <span>Event date: {enquiry.event_date}</span>}{enquiry.event_location && <span>Location: {enquiry.event_location}</span>}</div>{enquiry.message && <p className="enquiry-message">{enquiry.message}</p>}<button className="small-action danger-action" onClick={() => void deleteEnquiry(enquiry)}>Delete enquiry</button></article>)}</div>}</section></div>}
-      {tab === 'content' && <div className="dashboard-content"><section className="dashboard-panel"><div className="panel-heading"><div><span className="admin-eyebrow">PUBLIC WEBSITE</span><h2>Homepage content</h2><p>Update the hero message, introductory copy and public contact information.</p></div><span className="panel-icon"><Aperture size={21} /></span></div><form className="admin-form" onSubmit={saveHomepage}><label>Hero heading<input value={homepageConfig.hero_title} onChange={(e) => setHomepageConfig({ ...homepageConfig, hero_title: e.target.value })} maxLength={180} /></label><label>Hero supporting text<textarea rows={3} value={homepageConfig.hero_subtitle} onChange={(e) => setHomepageConfig({ ...homepageConfig, hero_subtitle: e.target.value })} maxLength={800} /></label><label>About the studio<textarea rows={5} value={homepageConfig.about_text} onChange={(e) => setHomepageConfig({ ...homepageConfig, about_text: e.target.value })} maxLength={1800} /></label><div className="admin-form-grid"><label>Public phone<input value={homepageConfig.phone} onChange={(e) => setHomepageConfig({ ...homepageConfig, phone: e.target.value })} maxLength={40} /></label><label>Public email<input type="email" value={homepageConfig.email} onChange={(e) => setHomepageConfig({ ...homepageConfig, email: e.target.value })} maxLength={254} /></label><label>Location<input value={homepageConfig.location} onChange={(e) => setHomepageConfig({ ...homepageConfig, location: e.target.value })} maxLength={180} /></label></div><button className="button button-dark" type="submit" disabled={working}>{working ? 'Saving…' : 'Save homepage content'} <Check size={15} /></button></form></section><div className="content-hint"><Sparkles size={19} /><p>Public changes will load from Supabase as soon as the database is configured. Keep private details and all API secrets out of website content fields.</p></div></div>}
+      {tab === 'content' && <div className="dashboard-content"><section className="dashboard-panel"><div className="panel-heading"><div><span className="admin-eyebrow">PUBLIC WEBSITE</span><h2>Homepage content</h2><p>Update the hero message, introductory copy and public contact information.</p></div><span className="panel-icon"><Aperture size={21} /></span></div><form className="admin-form" onSubmit={saveHomepage}><label>Hero heading<input value={homepageConfig.hero_title} onChange={(e) => setHomepageConfig({ ...homepageConfig, hero_title: e.target.value })} maxLength={180} /></label><label>Hero supporting text<textarea rows={3} value={homepageConfig.hero_subtitle} onChange={(e) => setHomepageConfig({ ...homepageConfig, hero_subtitle: e.target.value })} maxLength={800} /></label><label>About the studio<textarea rows={5} value={homepageConfig.about_text} onChange={(e) => setHomepageConfig({ ...homepageConfig, about_text: e.target.value })} maxLength={1800} /></label><div className="admin-form-grid"><label>Hero image URL<input type="url" value={homepageConfig.hero_image} onChange={(e) => setHomepageConfig({ ...homepageConfig, hero_image: e.target.value })} maxLength={1500} /></label><label>Public phone<input value={homepageConfig.phone} onChange={(e) => setHomepageConfig({ ...homepageConfig, phone: e.target.value })} maxLength={40} /></label><label>Public email<input type="email" value={homepageConfig.email} onChange={(e) => setHomepageConfig({ ...homepageConfig, email: e.target.value })} maxLength={254} /></label><label>Location<input value={homepageConfig.location} onChange={(e) => setHomepageConfig({ ...homepageConfig, location: e.target.value })} maxLength={180} /></label></div><button className="button button-dark" type="submit" disabled={working}>{working ? 'Saving…' : 'Save homepage content'} <Check size={15} /></button></form></section><div className="content-hint"><Sparkles size={19} /><p>Public changes will load from Supabase as soon as the database is configured. Keep private details and all API secrets out of website content fields.</p></div></div>}
       <footer className="dashboard-footer"><span>MEERA PHOTO STUDIO · PRIVATE ADMIN</span><span>Preserving moments, creating legacies.</span></footer>
     </main>
   </div>;
