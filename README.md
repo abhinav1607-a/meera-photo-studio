@@ -90,6 +90,7 @@ Requirements: Node.js 20 or later and npm.
 - Enquiry form inserts have server-side table constraints, but before using the form at scale, add CAPTCHA or an Edge Function with rate limiting / abuse protection.
 - Use the least-privilege admin account, strong authentication and reviewed RLS policies.
 - Only publish client photographs when the studio has the appropriate permission to use them.
+- The portfolio Storage bucket is public so published image URLs can load without sign-in. Upload only photographs approved for public access; unpublishing hides an image in the gallery but does not make a known image URL private or revoke copies already shared.
 - The institutional association names appear as supplied in the brief. Confirm official organisation styling and permissions before adding official logos or implying an endorsement.
 
 ## Deployment
