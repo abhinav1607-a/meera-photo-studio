@@ -99,9 +99,10 @@ The repository contains a Vercel rewrite file and a Netlify _redirects rule for 
 1. Push the repository to GitHub and import it into Vercel or Netlify.
 2. Set the build command to npm run build and the output directory to dist.
 3. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to the hosting environment variables.
-4. Add the production site URL to Supabase Authentication's site URL and allowed redirect URLs.
-5. Run the schema in the target Supabase project and register the authorised admin UUID.
-6. Test photo upload, replacement and deletion, public category filtering, video playback, contact submission, mobile layouts and the /admin route on the deployed domain.
+4. Set SITE_URL to your actual production HTTPS domain in the build environment. The build script creates sitemap.xml and updates robots.txt only when this value is configured; it intentionally does not guess or publish a placeholder domain.
+5. Add the production site URL to Supabase Authentication's site URL and allowed redirect URLs.
+6. Run the schema in the target Supabase project and register the authorised admin UUID.
+7. Test photo upload, replacement and deletion, public category filtering, video playback, contact submission, mobile layouts and the /admin route on the deployed domain.
 
 A hosting account, Supabase project credentials, custom domain and production deployment permissions have not been provided in this conversation, so this repository is not claimed to be deployed or production-verified.
 
