@@ -40,9 +40,10 @@ const wa = (service: string, details = '') => 'https://wa.me/' + WHATSAPP_NUMBER
 
 type VideoProject = { id: string; title: string; description: string | null; category: string; video_url: string; poster_url: string | null; is_published: boolean; position: number };
 type ServiceRecord = { id: string; title: string; description: string; image_url: string | null; is_published: boolean; position: number };
-type SiteConfig = { hero_title: string; hero_subtitle: string; about_text: string; phone: string; email: string; location: string };
+type SiteConfig = { hero_title: string; hero_subtitle: string; about_text: string; hero_image: string; phone: string; email: string; location: string };
 const defaultConfig: SiteConfig = {
   hero_title: 'Stories Captured.\nMemories Preserved.',
+  hero_image: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=2400&q=90',
   hero_subtitle: 'Professional photography & cinematography in Raipur, Chhattisgarh. Creating timeless visual stories for more than three decades.',
   about_text: 'Photography is more than capturing an image. It is about preserving emotions, celebrating milestones, and telling stories that remain meaningful for generations. With more than 30 years of experience, Mukesh Agrawal brings dedication, creativity, and professional expertise to every assignment.',
   phone: PHONE_DISPLAY,
@@ -63,9 +64,12 @@ function PortfolioSite() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [category, setCategory] = useState('All Work');
   const [photos, setPhotos] = useState<GalleryItem[]>(demoPhotos);
+  const [usingDemoPhotos, setUsingDemoPhotos] = useState(true);
   const [videos, setVideos] = useState<VideoProject[]>([]);
+  const [serviceContent, setServiceContent] = useState(baseServices);
   const [siteConfig, setSiteConfig] = useState<SiteConfig>(defaultConfig);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [activeVideo, setActiveVideo] = useState<VideoProject | null>(null);
   const [formState, setFormState] = useState({ full_name: '', phone: '', email: '', service: 'Wedding Photography', event_date: '', event_location: '', message: '' });
   const [formMessage, setFormMessage] = useState('');
   const [formError, setFormError] = useState('');
@@ -77,14 +81,16 @@ function PortfolioSite() {
     let alive = true;
     async function loadContent() {
       try {
-        const [galleryResult, videoResult, settingsResult] = await Promise.all([
+        const [galleryResult, videoResult, servicesResult, settingsResult] = await Promise.all([
           client.from('gallery_items').select('id,title,caption,category,image_url,alt_text,is_published,is_featured,position,created_at').eq('is_published', true).order('position', { ascending: true }),
           client.from('video_projects').select('id,title,description,category,video_url,poster_url,is_published,position').eq('is_published', true).order('position', { ascending: true }),
+          client.from('services').select('id,title,description,image_url,is_published,position').eq('is_published', true).order('position', { ascending: true }),
           client.from('site_settings').select('key,value').eq('key', 'homepage').maybeSingle(),
         ]);
         if (!alive) return;
-        if (!galleryResult.error && galleryResult.data && galleryResult.data.length > 0) setPhotos(galleryResult.data as GalleryItem[]);
+        if (!galleryResult.error && galleryResult.data && galleryResult.data.length > 0) { setPhotos(galleryResult.data as GalleryItem[]); setUsingDemoPhotos(false); }
         if (!videoResult.error && videoResult.data) setVideos(videoResult.data as VideoProject[]);
+        if (!servicesResult.error && servicesResult.data && servicesResult.data.length > 0) setServiceContent(servicesResult.data.map((item: ServiceRecord, index: number) => ({ title: item.title, short: item.description, image: item.image_url || baseServices[index % baseServices.length].image, number: String(index + 1).padStart(2, '0') })));
         if (!settingsResult.error && settingsResult.data?.value) setSiteConfig({ ...defaultConfig, ...(settingsResult.data.value as Partial<SiteConfig>) });
       } catch (error) {
         console.error('Could not load portfolio content:', error);
@@ -96,6 +102,14 @@ function PortfolioSite() {
 
   const visiblePhotos = useMemo(() => category === 'All Work' ? photos : photos.filter((photo) => photo.category === category), [photos, category]);
   const lightboxPhoto = lightboxIndex === null ? null : visiblePhotos[lightboxIndex];
+
+  useEffect(() => {
+    if (!activeVideo) return;
+    const onVideoKey = (event: KeyboardEvent) => { if (event.key === 'Escape') setActiveVideo(null); };
+    window.addEventListener('keydown', onVideoKey);
+    document.body.style.overflow = 'hidden';
+    return () => { window.removeEventListener('keydown', onVideoKey); document.body.style.overflow = ''; };
+  }, [activeVideo]);
 
   useEffect(() => {
     if (lightboxIndex === null) return;
@@ -168,7 +182,7 @@ function PortfolioSite() {
 
       <main>
         <section className="hero" id="home">
-          <div className="hero-image" role="img" aria-label="Cinematic wedding scene in warm evening light" />
+          <div className="hero-image" style={{ backgroundImage: "url(\'" + siteConfig.hero_image + "\')" }} role="img" aria-label="Cinematic wedding scene in warm evening light" />
           <div className="hero-shade" />
           <div className="hero-content">
             <div className="eyebrow light-eyebrow"><span /> PHOTOGRAPHY · CINEMATOGRAPHY · STORYTELLING</div>
@@ -184,7 +198,7 @@ function PortfolioSite() {
           <div className="hero-side-note">REAL MOMENTS. LASTING STORIES.</div>
         </section>
 
-        {!isSupabaseConfigured && <div className="preview-note"><span className="preview-dot" /> PREVIEW MODE — sample photographs are displayed until the studio connects storage and uploads its own portfolio.</div>}
+        {usingDemoPhotos && <div className="preview-note"><span className="preview-dot" /> PREVIEW MODE — sample photographs are shown until the studio publishes its own portfolio images in the admin dashboard.</div>}
 
         <section className="intro section-pad" id="about">
           <div className="intro-meta"><span className="section-index">01 / ABOUT THE STUDIO</span><span className="vertical-rule" /></div>
@@ -208,7 +222,7 @@ function PortfolioSite() {
             <p>Thoughtful photography and cinematic storytelling for life's milestones, celebrations and meaningful work.</p>
           </div>
           <div className="service-grid">
-            {baseServices.map((service) => (
+            {serviceContent.map((service) => (
               <article className="service-card" key={service.title}>
                 <button className="service-photo" onClick={() => openWhatsApp(service.title)} aria-label={'Enquire about ' + service.title}>
                   <img src={service.image} alt={service.title + ' sample photograph'} loading="lazy" />
@@ -274,9 +288,9 @@ function PortfolioSite() {
             <p>Wedding films, pre-wedding stories, event highlights and institutional coverage—crafted to bring the atmosphere back.</p>
           </div>
           {videos.length > 0 ? <div className="video-grid">
-            {videos.map((video) => <a href={video.video_url} target="_blank" rel="noreferrer" className="video-card" key={video.id}>
+            {videos.map((video) => <button type="button" className="video-card video-card-button" key={video.id} onClick={() => setActiveVideo(video)}>
               <div className="video-poster"><img src={video.poster_url || demoPhotos[0].image_url} alt={video.title + ' poster'} loading="lazy" /><span className="play-button"><Play size={18} fill="currentColor" /></span></div><span className="video-category">{video.category}</span><h3>{video.title}</h3><p>{video.description}</p>
-            </a>)}
+            </button>)}
           </div> : <div className="film-teaser">
             <div className="film-teaser-image"><img src="https://images.unsplash.com/photo-1492619375914-88005aa9e8fb?auto=format&fit=crop&w=1500&q=85" alt="Professional video production equipment, sample imagery" loading="lazy" /><div className="film-overlay"><span className="play-symbol"><Play size={18} fill="currentColor" /></span><span>THE STORY CONTINUES</span></div></div>
             <div className="film-teaser-copy"><Clapperboard size={28} strokeWidth={1.25} /><h3>From the first look<br />to the final frame.</h3><p>Ask us about wedding cinematography, event films and cinematic highlight edits.</p><button className="text-link" onClick={() => openWhatsApp('Videography and Cinematography')}>Explore film services <ArrowUpRight size={15} /></button></div>
@@ -337,6 +351,7 @@ function PortfolioSite() {
       <a className="whatsapp-float" href={wa('a photography booking')} target="_blank" rel="noreferrer" aria-label="Contact Meera Photo Studio on WhatsApp"><MessageCircle size={21} /><span>Let's talk</span></a>
 
       <AnimatePresence>
+        {activeVideo && <VideoPlayerModal video={activeVideo} onClose={() => setActiveVideo(null)} />}
         {lightboxPhoto && <motion.div className="lightbox" role="dialog" aria-modal="true" aria-label="Portfolio image viewer" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setLightboxIndex(null)}>
           <button className="lightbox-close" onClick={() => setLightboxIndex(null)} aria-label="Close image viewer"><X size={25} /></button>
           <button className="lightbox-arrow lightbox-prev" aria-label="Previous photo" onClick={(e) => { e.stopPropagation(); setLightboxIndex((index) => index === null ? null : (index - 1 + visiblePhotos.length) % visiblePhotos.length); }}><ChevronLeft size={28} /></button>
