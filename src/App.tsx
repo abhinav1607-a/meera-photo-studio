@@ -32,9 +32,10 @@ const baseServices = [
   { title: 'Drone Cinematography', short: 'Aerial perspectives for suitable venues, outdoor shoots and events.', image: 'https://images.unsplash.com/photo-1473968512647-3e447244af8f?auto=format&fit=crop&w=900&q=80', number: '06' },
   { title: 'Portraits & Families', short: 'Honest portraits and family photographs to return to for years.', image: 'https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=900&q=80', number: '07' },
   { title: 'Kazima Album Making', short: 'Beautifully arranged photographs, thoughtfully brought together in print.', image: 'https://images.unsplash.com/photo-1523438885200-e635ba2c371e?auto=format&fit=crop&w=900&q=80', number: '08' },
+  { title: 'Retirement & Anniversary Celebrations', short: 'Warm, respectful coverage of milestone anniversaries, retirement ceremonies and the people who make them memorable.', image: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=900&q=80', number: '09' },
 ];
 
-const categoryNames = ['All Work', 'Weddings', 'Pre-Wedding', 'Birthdays', 'Events', 'Candid Photography', 'Portraits', 'Family Photography', 'Commercial Photography', 'Sports Photography', 'Drone Photography', 'Cinematic Projects', 'Kazima Albums'];
+const categoryNames = ['All Work', 'Weddings', 'Pre-Wedding', 'Birthdays', 'Retirement & Anniversary', 'Events', 'Candid Photography', 'Portraits', 'Family Photography', 'Commercial Photography', 'Sports Photography', 'Drone Photography', 'Cinematic Projects', 'Kazima Albums'];
 
 const wa = (service: string, details = '') => 'https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent('Hello Meera Photo Studio, I would like to enquire about ' + service + '.' + (details ? '\n\n' + details : '') + ' Please share your packages, availability, and pricing.');
 
@@ -244,10 +245,10 @@ function PortfolioSite() {
             <p>Tell us what you're planning. We'll help you make room for the moments you'll want to remember.</p>
           </div>
           <div className="booking-list">
-            {['Wedding Photography', 'Pre-Wedding Shoots', 'Birthday Photography', 'Events & Celebrations'].map((service, index) => (
+            {['Wedding Photography', 'Pre-Wedding Shoots', 'Birthday Photography', 'Retirement & Anniversary Photography', 'Events & Celebrations'].map((service, index) => (
               <button key={service} onClick={() => openWhatsApp(service)}><span>0{index + 1}</span><strong>{service}</strong><ArrowUpRight size={19} /></button>
             ))}
-            <p>Also accepting enquiries for films, drone shoots, portraits and Kazima Albums.</p>
+            <p>Also accepting enquiries for retirement ceremonies, anniversaries, films, drone shoots, portraits and Kazima Albums.</p>
           </div>
         </section>
 
