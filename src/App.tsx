@@ -82,10 +82,10 @@ function PortfolioSite() {
     async function loadContent() {
       try {
         const [galleryResult, videoResult, servicesResult, settingsResult] = await Promise.all([
-          client.from('gallery_items').select('id,title,caption,category,image_url,alt_text,is_published,is_featured,position,created_at').eq('is_published', true).order('position', { ascending: true }),
-          client.from('video_projects').select('id,title,description,category,video_url,poster_url,is_published,position').eq('is_published', true).order('position', { ascending: true }),
-          client.from('services').select('id,title,description,image_url,is_published,position').eq('is_published', true).order('position', { ascending: true }),
-          client.from('site_settings').select('key,value').eq('key', 'homepage').maybeSingle(),
+          client!.from('gallery_items').select('id,title,caption,category,image_url,alt_text,is_published,is_featured,position,created_at').eq('is_published', true).order('position', { ascending: true }),
+          client!.from('video_projects').select('id,title,description,category,video_url,poster_url,is_published,position').eq('is_published', true).order('position', { ascending: true }),
+          client!.from('services').select('id,title,description,image_url,is_published,position').eq('is_published', true).order('position', { ascending: true }),
+          client!.from('site_settings').select('key,value').eq('key', 'homepage').maybeSingle(),
         ]);
         if (!alive) return;
         if (!galleryResult.error && galleryResult.data && galleryResult.data.length > 0) { setPhotos(galleryResult.data as GalleryItem[]); setUsingDemoPhotos(false); }
