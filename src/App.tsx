@@ -288,9 +288,11 @@ function PortfolioSite() {
             <p>Wedding films, pre-wedding stories, event highlights and institutional coverage—crafted to bring the atmosphere back.</p>
           </div>
           {videos.length > 0 ? <div className="video-grid">
-            {videos.map((video) => <button type="button" className="video-card video-card-button" key={video.id} onClick={() => setActiveVideo(video)}>
-              <div className="video-poster"><img src={video.poster_url || demoPhotos[0].image_url} alt={video.title + ' poster'} loading="lazy" /><span className="play-button"><Play size={18} fill="currentColor" /></span></div><span className="video-category">{video.category}</span><h3>{video.title}</h3><span className="video-description">{video.description}</span>
-            </button>)}
+            {videos.map((video) => <article className="video-card" key={video.id}>
+              <button type="button" className="video-poster video-trigger" onClick={() => setActiveVideo(video)} aria-label={'Play ' + video.title}>
+                <img src={video.poster_url || demoPhotos[0].image_url} alt={video.title + ' poster'} loading="lazy" /><span className="play-button"><Play size={18} fill="currentColor" /></span>
+              </button><span className="video-category">{video.category}</span><h3><button type="button" className="video-title-button" onClick={() => setActiveVideo(video)}>{video.title}</button></h3><p>{video.description}</p>
+            </article>)}
           </div> : <div className="film-teaser">
             <div className="film-teaser-image"><img src="https://images.unsplash.com/photo-1492619375914-88005aa9e8fb?auto=format&fit=crop&w=1500&q=85" alt="Professional video production equipment, sample imagery" loading="lazy" /><div className="film-overlay"><span className="play-symbol"><Play size={18} fill="currentColor" /></span><span>THE STORY CONTINUES</span></div></div>
             <div className="film-teaser-copy"><Clapperboard size={28} strokeWidth={1.25} /><h3>From the first look<br />to the final frame.</h3><p>Ask us about wedding cinematography, event films and cinematic highlight edits.</p><button className="text-link" onClick={() => openWhatsApp('Videography and Cinematography')}>Explore film services <ArrowUpRight size={15} /></button></div>
