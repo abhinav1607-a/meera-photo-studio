@@ -200,3 +200,17 @@ grant insert on table public.enquiries to anon, authenticated;
 grant select, update, delete on table public.enquiries to authenticated;
 grant select on table storage.objects to anon, authenticated;
 grant insert, update, delete on table storage.objects to authenticated;
+
+-- Starter service records. These are editable from /admin after the first admin account
+-- is provisioned. Replace the sample image URLs with the studio's own published assets.
+insert into public.services (title, description, image_url, is_published, position)
+values
+  ('Wedding Photography', 'Every ritual, every glance, every emotion—preserved with care.', 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=900&q=80', true, 1),
+  ('Pre-Wedding Shoots', 'Thoughtful concepts and portraits that feel unmistakably yours.', 'https://images.unsplash.com/photo-1537633552985-df8429e8048b?auto=format&fit=crop&w=900&q=80', true, 2),
+  ('Birthdays & Celebrations', 'The energy, the people, and the little moments worth keeping.', 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=900&q=80', true, 3),
+  ('Events & Institutions', 'Reliable, considered coverage for public, cultural and professional events.', 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=900&q=80', true, 4),
+  ('Videography & Films', 'Atmospheric films and highlight edits that bring the day back to life.', 'https://images.unsplash.com/photo-1492619375914-88005aa9e8fb?auto=format&fit=crop&w=900&q=80', true, 5),
+  ('Drone Cinematography', 'Aerial perspectives for suitable venues, outdoor shoots and events.', 'https://images.unsplash.com/photo-1473968512647-3e447244af8f?auto=format&fit=crop&w=900&q=80', true, 6),
+  ('Portraits & Families', 'Honest portraits and family photographs to return to for years.', 'https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=900&q=80', true, 7),
+  ('Kazima Album Making', 'Beautifully arranged photographs, thoughtfully brought together in print.', 'https://images.unsplash.com/photo-1523438885200-e635ba2c371e?auto=format&fit=crop&w=900&q=80', true, 8)
+on conflict (title) do nothing;
