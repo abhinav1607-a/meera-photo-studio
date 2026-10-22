@@ -301,7 +301,7 @@ function PortfolioSite() {
         </section>
 
         <section className="credentials">
-          <div className="credentials-top"><div className="eyebrow light-eyebrow"><span /> EXPERIENCE & TRUST</div><h2>Professional photography<br /><em>with a wider perspective.</em></h2><p>Meera Photo Studio's stated institutional photography associations.</p></div>
+          <div className="credentials-top"><div className="eyebrow light-eyebrow"><span /> INSTITUTIONAL PHOTOGRAPHY</div><h2>Official photographer<br /><em>for institutions.</em></h2><p>Photography coverage for Sports & Youth Welfare, C.G. Olympic Association, Public Work Devison and CG Cricket Asso., as supplied by the studio.</p></div>
           <div className="credentials-list">
             {['Sports & Youth Welfare', 'C.G. Olympic Association', 'Public Work Devison', 'CG Cricket Asso.'].map((name, index) => <div key={name}><span>0{index + 1}</span><strong>{name}</strong><ArrowUpRight size={17} /></div>)}
           </div>
@@ -346,7 +346,7 @@ function PortfolioSite() {
           <div className="footer-nav"><span className="footer-label">EXPLORE</span><a href="#about">About the studio</a><a href="#services">Photography services</a><a href="#portfolio">Portfolio</a><a href="#albums">Kazima Albums</a><a href="#films">Videography</a></div>
           <div className="footer-nav"><span className="footer-label">GET IN TOUCH</span><a href={'tel:' + (siteConfig.phone || PHONE_DISPLAY).replace(/[^+\d]/g, '')}>{siteConfig.phone || PHONE_DISPLAY}</a><a href={'mailto:' + (siteConfig.email || EMAIL_ADDRESS)}>{siteConfig.email || EMAIL_ADDRESS}</a><a href={wa('a photography booking')} target="_blank" rel="noreferrer">WhatsApp enquiries <ArrowUpRight size={13} /></a><span className="footer-open">Bookings open for upcoming dates</span></div>
         </div>
-        <div className="footer-associations"><span>PROFESSIONAL ASSOCIATIONS</span><p>Sports & Youth Welfare <i>·</i> C.G. Olympic Association <i>·</i> Public Work Devison <i>·</i> CG Cricket Asso.</p></div>
+        <div className="footer-associations"><span>OFFICIAL PHOTOGRAPHER FOR</span><p>Sports & Youth Welfare <i>·</i> C.G. Olympic Association <i>·</i> Public Work Devison <i>·</i> CG Cricket Asso.</p></div>
         <div className="footer-bottom"><span>© {new Date().getFullYear()} MEERA PHOTO STUDIO. ALL RIGHTS RESERVED.</span><span>PHOTOGRAPHY WITH PURPOSE, SINCE DAY ONE.</span><a href="/admin">STUDIO ADMIN <ArrowUpRight size={12} /></a></div>
       </footer>
 
