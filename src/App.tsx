@@ -399,7 +399,7 @@ function PortfolioSite() {
             </div>
             <div className="how-work-steps">
               {[
-                { number: '01', title: 'Consult', Icon: MessageCircle, description: 'Share your date, venue and ideas with us over a call, WhatsApp or a studio visit.' },
+                { number: '01', title: 'Consult', Icon: MessageCircle, description: 'Share your date, venue and ideas with us over a call, WhatsApp or a Meeting.' },
                 { number: '02', title: 'Plan', Icon: CalendarCheck, description: 'We recommend the right package, shot list and locations to suit your event and budget.' },
                 { number: '03', title: 'Capture', Icon: Aperture, description: 'On the day, our team covers every ritual, emotion and candid moment — calmly and on time.' },
                 { number: '04', title: 'Deliver', Icon: BookOpen, description: 'Carefully edited photos, films and premium albums, delivered ready to treasure.' },
