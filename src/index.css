@@ -972,3 +972,34 @@ main > section[id] { scroll-margin-top: 96px; }
 @media (prefers-reduced-motion: reduce) {
   .studio-loading-track > span { animation: none; width: 100%; }
 }
+
+
+/* Custom booking enquiry and direct contact actions */
+.booking-list > .booking-custom {
+  border: 1px solid rgba(201,169,110,.58);
+  padding: 18px 14px;
+  margin-top: 18px;
+  grid-template-columns: 34px 1fr 22px;
+  background: rgba(201,169,110,.07);
+}
+.booking-list > .booking-custom > strong { color: #E2C58F; }
+.booking-list > .booking-custom > svg { color: #C9A96E; }
+.booking-list > .booking-custom:hover { background: rgba(201,169,110,.14); border-color: #C9A96E; }
+.booking-list > .booking-custom:focus-visible { outline: 2px solid #C9A96E; outline-offset: 4px; }
+.contact-action-buttons { display: flex; flex-wrap: wrap; gap: 12px; margin: 0 0 24px; max-width: 410px; }
+.contact-action-buttons > a {
+  min-height: 46px; display: inline-flex; align-items: center; justify-content: center;
+  gap: 9px; padding: 0 18px; border: 1px solid #C9A96E; background: #C9A96E;
+  color: #081426; font-size: 11px; font-weight: 700; letter-spacing: .025em;
+  text-decoration: none; transition: background .2s ease, color .2s ease, transform .2s ease, border-color .2s ease;
+}
+.contact-action-buttons > a:hover { background: #E2C58F; border-color: #E2C58F; transform: translateY(-2px); }
+.contact-action-buttons > .contact-action-call { background: transparent; color: #F2F0EA; border-color: #536982; }
+.contact-action-buttons > .contact-action-call:hover { background: #142B47; color: #E2C58F; border-color: #C9A96E; }
+.contact-action-buttons > a:focus-visible { outline: 2px solid #C9A96E; outline-offset: 4px; }
+@media (max-width: 520px) {
+  .contact-action-buttons { gap: 9px; }
+  .contact-action-buttons > a { flex: 1 1 140px; min-height: 48px; padding: 0 12px; }
+  .booking-list > .booking-custom { grid-template-columns: 28px 1fr 20px; gap: 10px; padding: 16px 10px; }
+  .booking-list > .booking-custom > strong { font-size: 22px; line-height: 1.2; }
+}
