@@ -29,6 +29,7 @@ create table if not exists public.gallery_items (
   category text not null default 'Weddings',
   image_url text not null,
   storage_path text,
+  cloudinary_public_id text,
   alt_text text,
   is_published boolean not null default false,
   is_featured boolean not null default false,

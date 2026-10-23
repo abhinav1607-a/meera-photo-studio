@@ -7,6 +7,44 @@ import {
 } from 'lucide-react';
 import { isSupabaseConfigured, supabase, type GalleryItem, type Enquiry } from './lib/supabase';
 
+const CLOUDINARY_UPLOAD_ENDPOINT = '/api/cloudinary/sign-upload';
+const CLOUDINARY_DELETE_ENDPOINT = '/api/cloudinary/delete';
+
+type CloudinaryUploadResult = { secure_url: string; public_id: string };
+
+async function getCloudinaryAuthHeaders() {
+  if (!supabase) throw new Error('Supabase is not configured.');
+  const { data } = await supabase.auth.getSession();
+  const token = data.session?.access_token;
+  if (!token) throw new Error('Please sign in again before uploading media.');
+  return { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' };
+}
+
+async function uploadToCloudinary(file: File): Promise<CloudinaryUploadResult> {
+  const headers = await getCloudinaryAuthHeaders();
+  const signResponse = await fetch(CLOUDINARY_UPLOAD_ENDPOINT, { method: 'POST', headers, body: JSON.stringify({}) });
+  const signData = await signResponse.json();
+  if (!signResponse.ok) throw new Error(signData.error || 'Could not authorize Cloudinary upload.');
+  const body = new FormData();
+  body.append('file', file);
+  body.append('api_key', signData.api_key);
+  body.append('timestamp', String(signData.timestamp));
+  body.append('signature', signData.signature);
+  body.append('public_id', signData.public_id);
+  body.append('upload_preset', signData.upload_preset);
+  const response = await fetch('https://api.cloudinary.com/v1_1/' + signData.cloud_name + '/image/upload', { method: 'POST', body });
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.error?.message || 'Cloudinary upload failed.');
+  return { secure_url: result.secure_url, public_id: result.public_id };
+}
+
+async function deleteFromCloudinary(publicId: string) {
+  const headers = await getCloudinaryAuthHeaders();
+  const response = await fetch(CLOUDINARY_DELETE_ENDPOINT, { method: 'POST', headers, body: JSON.stringify({ public_id: publicId }) });
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.error || 'Could not delete Cloudinary asset.');
+}
+
 const WHATSAPP_NUMBER = '919827486699';
 const PHONE_DISPLAY = '+91 9827486699';
 const EMAIL_ADDRESS = 'meerastudiorpr@gmail.com';
@@ -510,17 +548,14 @@ function AdminPage() {
       for (const file of Array.from(selectedFiles)) {
         if (!supportedTypes.includes(file.type)) throw new Error(file.name + ' is not a supported image type. Use JPG, PNG, WEBP or AVIF.');
         if (file.size > 15 * 1024 * 1024) throw new Error(file.name + ' is larger than the 15 MB upload limit.');
-        const safeName = file.name.toLowerCase().replace(/[^a-z0-9._-]/g, '-');
-        const storagePath = Date.now() + '-' + Math.random().toString(36).slice(2, 8) + '-' + safeName;
-        const { error: uploadError } = await client.storage.from('portfolio').upload(storagePath, file, { cacheControl: '3600', upsert: false, contentType: file.type });
-        if (uploadError) throw uploadError;
-        const { data: publicData } = client.storage.from('portfolio').getPublicUrl(storagePath);
+        const uploaded = await uploadToCloudinary(file);
         newRows.push({
           title: formTitle.trim() || file.name.replace(/\.[^.]+$/, ''),
           caption: formCaption.trim() || null,
           category: formCategory,
-          image_url: publicData.publicUrl,
-          storage_path: storagePath,
+          image_url: uploaded.secure_url,
+          cloudinary_public_id: uploaded.public_id,
+          storage_path: null,
           alt_text: formAlt.trim() || formTitle.trim() || file.name,
           is_published: formPublish,
           is_featured: formFeatured,
@@ -550,18 +585,22 @@ function AdminPage() {
   async function deletePhoto(photo: GalleryItem) {
     const client = supabase;
     if (!client || !window.confirm('Delete “' + photo.title + '”? This cannot be undone.')) return;
-    const row = photo as GalleryItem & { storage_path?: string | null };
+    const row = photo as GalleryItem & { storage_path?: string | null; cloudinary_public_id?: string | null };
+    if (row.cloudinary_public_id) {
+      try { await deleteFromCloudinary(row.cloudinary_public_id); }
+      catch (error) { setAdminMessage('Could not delete the Cloudinary image, so the gallery record was kept: ' + (error instanceof Error ? error.message : String(error))); return; }
+    }
     const { error } = await client.from('gallery_items').delete().eq('id', photo.id);
     if (error) { setAdminMessage('Could not delete the gallery record: ' + error.message); return; }
     if (row.storage_path) {
       const { error: storageError } = await client.storage.from('portfolio').remove([row.storage_path]);
       if (storageError) {
-        setAdminMessage('Gallery record deleted, but storage cleanup failed. An unreferenced file remains in storage: ' + storageError.message);
+        setAdminMessage('Gallery record deleted, but an old Supabase Storage file could not be removed: ' + storageError.message);
         await loadAdminData();
         return;
       }
     }
-    setAdminMessage('Photograph deleted.');
+    setAdminMessage('Photograph and its stored media deleted.');
     await loadAdminData();
   }
 
@@ -647,23 +686,26 @@ function AdminPage() {
       return;
     }
     setWorking(true);
-    const oldRow = photo as GalleryItem & { storage_path?: string | null };
-    const safeName = file.name.toLowerCase().replace(/[^a-z0-9._-]/g, '-');
-    const storagePath = Date.now() + '-' + Math.random().toString(36).slice(2, 8) + '-' + safeName;
-    const { error: uploadError } = await client.storage.from('portfolio').upload(storagePath, file, { cacheControl: '3600', upsert: false, contentType: file.type });
-    if (uploadError) { setAdminMessage('Replacement upload failed: ' + uploadError.message); setWorking(false); return; }
-    const { data } = client.storage.from('portfolio').getPublicUrl(storagePath);
-    const { error } = await client.from('gallery_items').update({ image_url: data.publicUrl, storage_path: storagePath, alt_text: file.name }).eq('id', photo.id);
-    if (error) {
-      await client.storage.from('portfolio').remove([storagePath]);
-      setAdminMessage('Could not update the gallery record: ' + error.message);
-      setWorking(false);
-      return;
-    }
-    if (oldRow.storage_path) await client.storage.from('portfolio').remove([oldRow.storage_path]);
-    setAdminMessage('Photograph replaced successfully.');
-    await loadAdminData();
-    setWorking(false);
+    const oldRow = photo as GalleryItem & { storage_path?: string | null; cloudinary_public_id?: string | null };
+    try {
+      const uploaded = await uploadToCloudinary(file);
+      const { error } = await client.from('gallery_items').update({ image_url: uploaded.secure_url, cloudinary_public_id: uploaded.public_id, storage_path: null, alt_text: file.name }).eq('id', photo.id);
+      if (error) {
+        try { await deleteFromCloudinary(uploaded.public_id); } catch { /* keep the original database error visible */ }
+        setAdminMessage('Could not update the gallery record: ' + error.message);
+        setWorking(false);
+        return;
+      }
+      if (oldRow.cloudinary_public_id) {
+        try { await deleteFromCloudinary(oldRow.cloudinary_public_id); }
+        catch (error) { setAdminMessage('Photograph replaced, but the previous Cloudinary asset could not be cleaned up: ' + (error instanceof Error ? error.message : String(error))); await loadAdminData(); setWorking(false); return; }
+      }
+      if (oldRow.storage_path) await client.storage.from('portfolio').remove([oldRow.storage_path]);
+      setAdminMessage('Photograph replaced successfully.');
+      await loadAdminData();
+    } catch (error) {
+      setAdminMessage('Replacement upload failed: ' + (error instanceof Error ? error.message : String(error)));
+    } finally { setWorking(false); }
   }
 
   async function updateEnquiryStatus(enquiry: Enquiry, status: Enquiry['status']) {
@@ -713,7 +755,7 @@ function AdminPage() {
       <button className={tab === 'services' ? 'selected' : ''} onClick={() => setTab('services')}><Camera size={17} /> Services <span>{services.length}</span></button>
       <button className={tab === 'enquiries' ? 'selected' : ''} onClick={() => setTab('enquiries')}><Mail size={17} /> Enquiries <span>{enquiries.filter((item) => item.status === 'New').length}</span></button>
       <button className={tab === 'content' ? 'selected' : ''} onClick={() => setTab('content')}><Aperture size={17} /> Website content</button>
-    </nav><div className="dashboard-sidebar-bottom"><div className="online-indicator"><i /> Supabase connected</div><span>{user.email}</span><button onClick={signOut}>Sign out <ArrowUpRight size={13} /></button><a href="/">View public website ↗</a></div></aside>
+    </nav><div className="dashboard-sidebar-bottom"><div className="online-indicator"><i /> Supabase database · Cloudinary media</div><span>{user.email}</span><button onClick={signOut}>Sign out <ArrowUpRight size={13} /></button><a href="/">View public website ↗</a></div></aside>
     <main className="dashboard-main"><header className="dashboard-topbar"><div><span className="admin-eyebrow">MEERA PHOTO STUDIO / ADMINISTRATION</span><h1>{tab === 'gallery' ? 'Photo gallery' : tab === 'videos' ? 'Video projects' : tab === 'services' ? 'Photography services' : tab === 'enquiries' ? 'Bookings & enquiries' : 'Website content'}</h1></div><button className="dashboard-refresh" onClick={() => void loadAdminData()}><Clock3 size={15} /> Refresh data</button></header>
       <div className="dashboard-welcome"><div><span className="welcome-mark"><Aperture size={20} /></span><div><strong>Good to see you in the studio.</strong><p>Keep the portfolio current and every enquiry in view.</p></div></div><span className="dashboard-private"><i /> PRIVATE DASHBOARD</span></div>
       {adminMessage && <div className="admin-message" role="status">{adminMessage}<button onClick={() => setAdminMessage('')} aria-label="Dismiss message"><X size={14} /></button></div>}
