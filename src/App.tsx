@@ -71,6 +71,9 @@ const baseServices = [
   { title: 'Portraits & Families', short: 'Honest portraits and family photographs to return to for years.', image: 'https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=900&q=80', number: '07' },
   { title: 'Kazima Album Making', short: 'Beautifully arranged photographs, thoughtfully brought together in print.', image: 'https://images.unsplash.com/photo-1523438885200-e635ba2c371e?auto=format&fit=crop&w=900&q=80', number: '08' },
   { title: 'Retirement & Anniversary Celebrations', short: 'Warm, respectful coverage of milestone anniversaries, retirement ceremonies and the people who make them memorable.', image: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=900&q=80', number: '09' },
+  { title: 'School & College Shoots', short: 'Institutional events, student portraits, group photographs, annual functions and cultural programs.', image: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=900&q=80', number: '10' },
+  { title: 'Sports Photography', short: 'Action shots, tournaments, competitions, team portraits and the moments that define sporting events.', image: 'https://images.unsplash.com/photo-1461896836934-028b1a6b1e9c?auto=format&fit=crop&w=900&q=80', number: '11' },
+  { title: 'Karizma Albums (Designer Albums)', short: 'Premium designer albums with professionally arranged layouts and high-quality presentation for memorable occasions.', image: 'https://images.unsplash.com/photo-1523438885200-e635ba2c371e?auto=format&fit=crop&w=900&q=80', number: '12' },
 ];
 
 const categoryNames = ['All Work', 'Weddings', 'Pre-Wedding', 'Ring Ceremony', 'Birthdays', 'Retirement & Anniversary', 'Events', 'Candid Photography', 'Portraits', 'Family Photography', 'Commercial Photography', 'Sports Photography', 'Drone Photography', 'Cinematic Projects', 'Kazima Albums'];
@@ -102,6 +105,7 @@ function App() {
 
 const studioStats = [
   { label: 'SESSIONS COMPLETED', target: 6000, suffix: '+', Icon: Camera },
+  { label: 'PHOTOS CLICKED', target: 415000, suffix: '+', Icon: Aperture },
   { label: 'HAPPY CLIENTS', target: 1000, suffix: '+', Icon: Users },
   { label: 'YEARS EXPERIENCE', target: 30, suffix: '+', Icon: Award },
   { label: 'CLIENT SATISFACTION', target: 99, suffix: '%', Icon: Heart },
@@ -173,6 +177,9 @@ function PortfolioSite() {
   const [showAllWork, setShowAllWork] = useState(false);
   const [photos, setPhotos] = useState<GalleryItem[]>([]);
   const [usingDemoPhotos, setUsingDemoPhotos] = useState(false);
+  const [contentReady, setContentReady] = useState(!isSupabaseConfigured);
+  const [heroImageReady, setHeroImageReady] = useState(false);
+  const [loadingDismissed, setLoadingDismissed] = useState(false);
   const [videos, setVideos] = useState<VideoProject[]>([]);
   const [serviceContent, setServiceContent] = useState(baseServices);
   const [siteConfig, setSiteConfig] = useState<SiteConfig>(defaultConfig);
@@ -230,8 +237,23 @@ function PortfolioSite() {
   }, []);
 
   useEffect(() => {
+    const image = new Image();
+    let alive = true;
+    const finish = () => { if (alive) setHeroImageReady(true); };
+    image.onload = finish;
+    image.onerror = finish;
+    image.src = siteConfig.hero_image;
+    if (image.complete) finish();
+    return () => { alive = false; image.onload = null; image.onerror = null; };
+  }, [siteConfig.hero_image]);
+
+  useEffect(() => {
+    if (contentReady && heroImageReady) setLoadingDismissed(true);
+  }, [contentReady, heroImageReady]);
+
+  useEffect(() => {
     const client = supabase;
-    if (!client) return;
+    if (!client) { setContentReady(true); return; }
     let alive = true;
     async function loadContent() {
       try {
@@ -248,6 +270,8 @@ function PortfolioSite() {
         if (!settingsResult.error && settingsResult.data?.value) setSiteConfig({ ...defaultConfig, ...(settingsResult.data.value as Partial<SiteConfig>) });
       } catch (error) {
         console.error('Could not load portfolio content:', error);
+      } finally {
+        if (alive) setContentReady(true);
       }
     }
     void loadContent();
@@ -325,6 +349,22 @@ function PortfolioSite() {
 
   return (
     <div className="site-shell">
+      <AnimatePresence>
+        {!loadingDismissed && (
+          <motion.div
+            className="studio-loading-screen"
+            role="status"
+            aria-live="polite"
+            initial={reduceMotion ? false : { opacity: 1 }}
+            exit={reduceMotion ? { opacity: 0 } : { opacity: 0 }}
+            transition={{ duration: reduceMotion ? 0 : 0.7, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <div className="studio-loading-brand"><span className="wordmark-icon"><Aperture size={30} strokeWidth={1.3} /></span><span><strong>MEERA</strong><small>PHOTO STUDIO</small></span></div>
+            <p>Welcome to Meera Photo Studio. High-quality photographs may take a little time to load on your first visit. Kindly wait a moment while the images appear. Thank you for your patience.</p>
+            <span className="studio-loading-track" aria-hidden="true"><span /></span>
+          </motion.div>
+        )}
+      </AnimatePresence>
       <header className="site-header">
         <a href="#home" className="wordmark" aria-label="Meera Photo Studio home">
           <span className="wordmark-icon"><Aperture size={24} strokeWidth={1.4} /></span>
@@ -413,10 +453,10 @@ function PortfolioSite() {
             <p>Tell us what you're planning. We'll help you make room for the moments you'll want to remember.</p>
           </div>
           <div className="booking-list">
-            {['Wedding Photography', 'Pre-Wedding Shoots', 'Birthday Photography', 'Retirement & Anniversary Photography', 'Events & Celebrations'].map((service, index) => (
-              <button key={service} onClick={() => openWhatsApp(service)}><span>0{index + 1}</span><strong>{service}</strong><ArrowUpRight size={19} /></button>
+            {['Wedding Photography', 'Pre-Wedding Shoots', 'Birthday Photography', 'Retirement & Anniversary Photography', 'Events & Celebrations', 'School & College Shoots', 'Sports Photography', 'Karizma Albums (Designer Albums)'].map((service, index) => (
+              <button key={service} onClick={() => openWhatsApp(service)}><span>{String(index + 1).padStart(2, '0')}</span><strong>{service}</strong><ArrowUpRight size={19} /></button>
             ))}
-            <p>Also accepting enquiries for retirement ceremonies, anniversaries, films, drone shoots, portraits and Kazima Albums.</p>
+            <p>Also accepting enquiries for institutional shoots, sports events, films, drone shoots, portraits and designer Karizma Albums.</p>
           </div>
         </section>
 
@@ -490,11 +530,10 @@ function PortfolioSite() {
         </section>
 
         <section className="credentials">
-          <div className="credentials-top"><div className="eyebrow light-eyebrow"><span /> INSTITUTIONAL PHOTOGRAPHY</div><h2>Official photographer<br /><em>for institutions.</em></h2><p>Photography coverage for Sports & Youth Welfare, C.G. Olympic Association, Public Work Devison and CG Cricket Asso., as supplied by the studio.</p></div>
+          <div className="credentials-top"><div className="eyebrow light-eyebrow"><span /> INSTITUTIONAL PHOTOGRAPHY</div><h2>Official photographer<br /><em>for institutions.</em></h2><p>Professional photography coverage for sports bodies, public institutions, educational organisations and the corporate sector across Chhattisgarh.</p></div>
           <div className="credentials-list">
-            {['Sports & Youth Welfare', 'C.G. Olympic Association', 'Public Work Devison', 'CG Cricket Asso.'].map((name, index) => <div key={name}><span>0{index + 1}</span><strong>{name}</strong><ArrowUpRight size={17} /></div>)}
+            {['Sports & Youth Welfare, Chhattisgarh', 'C.G. Olympic Association', 'Public Works Department, Chhattisgarh', 'C.G. Volleyball Association', 'C.G. Archery Association', 'C.G. Table Tennis Association', 'Corporate Sector', 'Schools & Colleges'].map((name, index) => <div key={name}><span>{String(index + 1).padStart(2, '0')}</span><strong>{name}</strong><ArrowUpRight size={17} /></div>)}
           </div>
-          <div className="credentials-note">Organisational names shown as supplied. Please confirm official styling and permissions before publishing any institutional logo or endorsement.</div>
         </section>
 
         <section className="contact section-pad" id="contact">
