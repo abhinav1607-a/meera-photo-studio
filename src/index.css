@@ -1097,3 +1097,20 @@ main > section[id] { scroll-margin-top: 96px; }
 @media (max-width: 900px) { .how-work-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 38px 28px; } .how-work-steps::before { display: none; } .how-work-step > p { max-width: 290px; } }
 @media (max-width: 520px) { .how-we-work { margin-bottom: 62px; } .how-work-heading { margin-bottom: 36px; } .how-work-heading h2 { font-size: clamp(34px, 9vw, 44px); } .how-work-heading > p { font-size: 11px; padding: 0 5px; } .how-work-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px 15px; } .how-work-icon-wrap, .how-work-icon { width: 64px; height: 64px; } .how-work-step h3 { font-size: 24px; } .how-work-step > p { font-size: 10px; line-height: 1.75; } }
 @media (prefers-reduced-motion: reduce) { .how-work-step, .how-work-icon, .how-work-step h3 { transition: none !important; } }
+
+
+/* High-contrast How We Work text for the dark navy Services section */
+.services .how-we-work { color: #F2F0EA; }
+.services .how-work-eyebrow { color: #D9B978; }
+.services .how-work-heading h2 { color: #F2F0EA; }
+.services .how-work-heading h2 em { color: #D9B978; }
+.services .how-work-heading > p { color: #B8C3D1; }
+.services .how-work-step h3 { color: #F2F0EA; }
+.services .how-work-step > p { color: #C1CBD7; }
+.services .how-work-step:hover h3,
+.services .how-work-step:focus-within h3 { color: #E2C58F; }
+.services .how-work-steps::before { border-top-color: rgba(201,169,110,.52); }
+@media (prefers-contrast: more) {
+  .services .how-work-heading > p,
+  .services .how-work-step > p { color: #F2F0EA; }
+}
