@@ -490,7 +490,7 @@ function PortfolioSite() {
           <div className="footer-nav"><span className="footer-label">GET IN TOUCH</span><a href={'tel:' + (siteConfig.phone || PHONE_DISPLAY).replace(/[^+\d]/g, '')}>{siteConfig.phone || PHONE_DISPLAY}</a><a href={'mailto:' + (siteConfig.email || EMAIL_ADDRESS)}>{siteConfig.email || EMAIL_ADDRESS}</a><a href={wa('a photography booking')} target="_blank" rel="noreferrer">WhatsApp enquiries <ArrowUpRight size={13} /></a><span className="footer-open">Bookings open for upcoming dates</span></div>
         </div>
         <div className="footer-associations"><span>OFFICIAL PHOTOGRAPHER FOR</span><p>Sports & Youth Welfare <i>·</i> C.G. Olympic Association <i>·</i> Public Work Devison <i>·</i> CG Cricket Asso.</p></div>
-        <div className="footer-bottom"><span>© {new Date().getFullYear()} MEERA PHOTO STUDIO. ALL RIGHTS RESERVED.</span><span>PHOTOGRAPHY WITH PURPOSE, SINCE DAY ONE.</span><a href="/admin">STUDIO ADMIN <ArrowUpRight size={12} /></a></div>
+        <div className="footer-bottom"><span>© {new Date().getFullYear()} MEERA PHOTO STUDIO. ALL RIGHTS RESERVED.</span><span>PHOTOGRAPHY WITH PURPOSE, SINCE DAY ONE.</span></div>
       </footer>
 
       <a className="whatsapp-float" href={wa('a photography booking')} target="_blank" rel="noreferrer" aria-label="Contact Meera Photo Studio on WhatsApp"><MessageCircle size={21} /><span>Let's talk</span></a>
