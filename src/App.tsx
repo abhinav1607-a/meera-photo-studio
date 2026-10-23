@@ -73,7 +73,7 @@ const baseServices = [
   { title: 'Retirement & Anniversary Celebrations', short: 'Warm, respectful coverage of milestone anniversaries, retirement ceremonies and the people who make them memorable.', image: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=900&q=80', number: '09' },
 ];
 
-const categoryNames = ['All Work', 'Weddings', 'Pre-Wedding', 'Birthdays', 'Retirement & Anniversary', 'Events', 'Candid Photography', 'Portraits', 'Family Photography', 'Commercial Photography', 'Sports Photography', 'Drone Photography', 'Cinematic Projects', 'Kazima Albums'];
+const categoryNames = ['All Work', 'Weddings', 'Pre-Wedding', 'Ring Ceremony', 'Birthdays', 'Retirement & Anniversary', 'Events', 'Candid Photography', 'Portraits', 'Family Photography', 'Commercial Photography', 'Sports Photography', 'Drone Photography', 'Cinematic Projects', 'Kazima Albums'];
 
 const wa = (service: string, details = '') => 'https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent('Hello Meera Photo Studio, I would like to enquire about ' + service + '.' + (details ? '\n\n' + details : '') + ' Please share your packages, availability, and pricing.');
 
@@ -294,16 +294,34 @@ function PortfolioSite() {
             <p>Every story has its own rhythm. Browse by occasion and explore a few of the ways we see the world.</p>
           </div>
           <div className="filter-row" role="group" aria-label="Filter portfolio by category">
-            {categoryNames.map((item) => <button key={item} className={category === item ? 'filter-pill active' : 'filter-pill'} onClick={() => { setCategory(item); setLightboxIndex(null); }}>{item}</button>)}
+            {categoryNames.map((item) => <button type="button" key={item} aria-pressed={category === item} className={category === item ? 'filter-pill active' : 'filter-pill'} onClick={() => { setCategory(item); setLightboxIndex(null); }}>{item}</button>)}
           </div>
-          <div className="portfolio-grid">
-            {visiblePhotos.map((photo, index) => (
-              <button className={'portfolio-item portfolio-item-' + (index % 6 + 1)} key={photo.id} onClick={() => setLightboxIndex(index)} aria-label={'View ' + photo.title}>
-                <img src={photo.image_url} alt={photo.alt_text || photo.title} loading="lazy" />
-                <span className="portfolio-hover"><span>{photo.category}</span><strong>{photo.title}</strong><i><ArrowUpRight size={18} /></i></span>
-              </button>
-            ))}
-          </div>
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={category}
+              className="portfolio-grid"
+              initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={reduceMotion ? undefined : { opacity: 0, y: -5 }}
+              transition={{ duration: reduceMotion ? 0 : 0.24, ease: 'easeOut' }}
+            >
+              {visiblePhotos.map((photo, index) => (
+                <motion.button
+                  type="button"
+                  className={'portfolio-item portfolio-item-' + (index % 6 + 1)}
+                  key={photo.id}
+                  onClick={() => setLightboxIndex(index)}
+                  aria-label={'View ' + photo.title}
+                  initial={reduceMotion ? false : { opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: reduceMotion ? 0 : 0.22, delay: reduceMotion ? 0 : Math.min(index * 0.035, 0.21) }}
+                >
+                  <img src={photo.image_url} alt={photo.alt_text || photo.title} loading="lazy" />
+                  <span className="portfolio-hover"><span>{photo.category}</span><strong>{photo.title}</strong><i><ArrowUpRight size={18} /></i></span>
+                </motion.button>
+              ))}
+            </motion.div>
+          </AnimatePresence>
           {visiblePhotos.length === 0 && <div className="empty-gallery"><Camera size={27} /><h3>More stories are on the way.</h3><p>There are no published photographs in this category yet.</p><button className="text-link" onClick={() => setCategory('All Work')}>View all work <ArrowRight size={15} /></button></div>}
           <div className="portfolio-bottom"><span>PHOTOGRAPHS THAT TAKE YOU BACK.</span><button className="text-link" onClick={() => openWhatsApp('a portfolio consultation')}>Discuss your project <ArrowUpRight size={15} /></button></div>
         </section>
