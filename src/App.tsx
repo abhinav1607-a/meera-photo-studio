@@ -234,7 +234,7 @@ function PortfolioSite() {
           <div className="hero-image" style={{ backgroundImage: "url(\'" + siteConfig.hero_image + "\')" }} role="img" aria-label="Cinematic wedding scene in warm evening light" />
           <div className="hero-shade" />
           <div className="hero-content">
-            <div className="eyebrow light-eyebrow"><span /> PHOTOGRAPHY · CINEMATOGRAPHY · STORYTELLING</div>
+            <div className="eyebrow light-eyebrow"><span /> PHOTOGRAPHY · CINEMATOGRAPHY · VIDEOGRAPHY</div>
             <p className="hero-kicker">RAIPUR, CHHATTISGARH · EST. WITH EXPERIENCE</p>
             <h1>{siteConfig.hero_title.split('\n').map((line, index) => <span key={index}>{line}{index === 0 ? <br /> : null}</span>)}</h1>
             <p className="hero-copy">{siteConfig.hero_subtitle}</p>
