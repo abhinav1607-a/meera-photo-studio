@@ -184,6 +184,50 @@ function PortfolioSite() {
   const [sending, setSending] = useState(false);
 
   useEffect(() => {
+    const root = document.querySelector('.site-shell');
+    if (!root) return;
+    const sections = Array.from(root.querySelectorAll<HTMLElement>('main > section[id]'));
+    if (!sections.length) return;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    root.classList.add('cinematic-ready');
+    const markVisible = (section: HTMLElement) => section.classList.add('cinematic-visible');
+    const observer = reduceMotion ? null : new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          markVisible(entry.target as HTMLElement);
+          observer?.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
+    sections.forEach((section, index) => {
+      if (index === 0 || reduceMotion) markVisible(section);
+      else observer?.observe(section);
+    });
+
+    const onAnchorClick = (event: MouseEvent) => {
+      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      const target = event.target as HTMLElement | null;
+      const link = target?.closest<HTMLAnchorElement>('a[href^="#"]');
+      if (!link) return;
+      const hash = link.getAttribute('href');
+      if (!hash || hash === '#') return;
+      const destination = root.querySelector<HTMLElement>(hash);
+      if (!destination) return;
+      event.preventDefault();
+      destination.classList.add('cinematic-visible');
+      destination.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+      if (window.location.hash !== hash) history.pushState(null, '', hash);
+      setMenuOpen(false);
+    };
+    root.addEventListener('click', onAnchorClick);
+    return () => {
+      root.classList.remove('cinematic-ready');
+      observer?.disconnect();
+      root.removeEventListener('click', onAnchorClick);
+    };
+  }, []);
+
+  useEffect(() => {
     const client = supabase;
     if (!client) return;
     let alive = true;
