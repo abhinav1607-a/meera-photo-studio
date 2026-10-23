@@ -1074,3 +1074,26 @@ main > section[id] { scroll-margin-top: 96px; }
   .booking-list > button.booking-custom > strong { font-size: 21px; }
   .booking-list > button.booking-custom > strong small { font-size: 10px; }
 }
+
+
+/* How We Work — scoped workflow section at the top of Services */
+.how-we-work { width: 100%; margin: 0 auto clamp(68px, 8vw, 112px); padding: clamp(8px, 1vw, 16px) 0 0; color: var(--navy); }
+.how-work-heading { max-width: 760px; margin: 0 auto clamp(44px, 5.4vw, 72px); text-align: center; }
+.how-work-eyebrow { color: #9b7b45; font-size: 10px; font-weight: 700; letter-spacing: .22em; line-height: 1.5; }
+.how-work-heading h2 { margin: 16px 0 15px; color: var(--navy); font-family: var(--serif); font-size: clamp(36px, 4.4vw, 58px); font-weight: 400; line-height: 1.04; letter-spacing: -.025em; }
+.how-work-heading h2 em { color: #a7834c; font-weight: 400; }
+.how-work-heading > p { max-width: 590px; margin: 0 auto; color: #697585; font-size: 12px; line-height: 1.9; }
+.how-work-steps { position: relative; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(16px, 3vw, 42px); }
+.how-work-steps::before { content: ""; position: absolute; z-index: 0; top: 35px; left: 12.5%; right: 12.5%; border-top: 1px dashed rgba(183,145,83,.58); pointer-events: none; }
+.how-work-step { position: relative; z-index: 1; min-width: 0; padding: 0 4px 8px; text-align: center; border-radius: 5px; transform: translateY(0); transition: transform 320ms cubic-bezier(.2,.75,.25,1); }
+.how-work-icon-wrap { position: relative; width: 72px; height: 72px; margin: 0 auto 23px; }
+.how-work-icon { display: grid; place-items: center; width: 72px; height: 72px; border: 1px solid #d9c8a8; border-radius: 50%; background: #fffdfa; color: #24364b; transform: scale(1); box-shadow: 0 0 0 rgba(11,22,40,0); transition: background 300ms ease, color 300ms ease, border-color 300ms ease, transform 300ms cubic-bezier(.2,.75,.25,1), box-shadow 300ms ease; }
+.how-work-number { position: absolute; z-index: 2; top: -3px; right: -5px; display: grid; place-items: center; width: 25px; height: 25px; border: 2px solid var(--ivory); border-radius: 50%; background: #101820; color: #f9f6ef; font-family: var(--serif); font-size: 11px; line-height: 1; }
+.how-work-step h3 { margin: 0 0 10px; color: var(--navy); font-family: var(--serif); font-size: clamp(23px, 2.5vw, 30px); line-height: 1.1; font-weight: 500; transition: color 300ms ease; }
+.how-work-step > p { max-width: 250px; margin: 0 auto; color: #697585; font-size: 11px; line-height: 1.85; }
+.how-work-step:hover, .how-work-step:focus-within { transform: translateY(-5px); }
+.how-work-step:hover .how-work-icon, .how-work-step:focus-within .how-work-icon { background: #d9b978; border-color: #c6a35f; color: #17263a; transform: scale(1.07); box-shadow: 0 9px 24px rgba(112,82,32,.17); }
+.how-work-step:hover h3, .how-work-step:focus-within h3 { color: #a7834c; }
+@media (max-width: 900px) { .how-work-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 38px 28px; } .how-work-steps::before { display: none; } .how-work-step > p { max-width: 290px; } }
+@media (max-width: 520px) { .how-we-work { margin-bottom: 62px; } .how-work-heading { margin-bottom: 36px; } .how-work-heading h2 { font-size: clamp(34px, 9vw, 44px); } .how-work-heading > p { font-size: 11px; padding: 0 5px; } .how-work-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px 15px; } .how-work-icon-wrap, .how-work-icon { width: 64px; height: 64px; } .how-work-step h3 { font-size: 24px; } .how-work-step > p { font-size: 10px; line-height: 1.75; } }
+@media (prefers-reduced-motion: reduce) { .how-work-step, .how-work-icon, .how-work-step h3 { transition: none !important; } }
