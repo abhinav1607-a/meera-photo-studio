@@ -819,3 +819,20 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 @media (prefers-reduced-motion: reduce) {
   .about-stat, .about-portrait img { scroll-behavior: auto; }
 }
+
+
+/* Ensure About-section feature labels and icons remain legible on the light background */
+.about-features > div {
+  color: #24364b;
+  font-weight: 600;
+}
+.about-features > div > span {
+  color: #ffffff;
+  background: #294968;
+  border: 1px solid #294968;
+  flex-shrink: 0;
+}
+.about-features > div > span svg {
+  color: #ffffff;
+  stroke: #ffffff;
+}
