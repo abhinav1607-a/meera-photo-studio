@@ -177,10 +177,6 @@ function PortfolioSite() {
   const [showAllWork, setShowAllWork] = useState(false);
   const [photos, setPhotos] = useState<GalleryItem[]>([]);
   const [usingDemoPhotos, setUsingDemoPhotos] = useState(false);
-  const [contentReady, setContentReady] = useState(!isSupabaseConfigured);
-  const [heroImageReady, setHeroImageReady] = useState(false);
-  const [loadingDismissed, setLoadingDismissed] = useState(false);
-  const [minimumLoadingTimeElapsed, setMinimumLoadingTimeElapsed] = useState(false);
   const [videos, setVideos] = useState<VideoProject[]>([]);
   const [serviceContent, setServiceContent] = useState(baseServices);
   const [siteConfig, setSiteConfig] = useState<SiteConfig>(defaultConfig);
@@ -238,34 +234,9 @@ function PortfolioSite() {
   }, []);
 
   useEffect(() => {
-    const image = new Image();
-    let alive = true;
-    const finish = () => { if (alive) setHeroImageReady(true); };
-    const safetyTimer = window.setTimeout(finish, 10000);
-    setHeroImageReady(false);
-    image.onload = finish;
-    image.onerror = finish;
-    image.src = siteConfig.hero_image;
-    if (image.complete) finish();
-    return () => { alive = false; window.clearTimeout(safetyTimer); image.onload = null; image.onerror = null; };
-  }, [siteConfig.hero_image]);
-
-  useEffect(() => {
-    // Keep the welcome screen visible for at least 4.5 seconds so visitors can read it.
-    const minimumReadingTimer = window.setTimeout(() => setMinimumLoadingTimeElapsed(true), 4500);
-    return () => window.clearTimeout(minimumReadingTimer);
-  }, []);
-
-  useEffect(() => {
-    if (contentReady && heroImageReady && minimumLoadingTimeElapsed) setLoadingDismissed(true);
-  }, [contentReady, heroImageReady, minimumLoadingTimeElapsed]);
-
-  useEffect(() => {
     const client = supabase;
-    if (!client) { setContentReady(true); return; }
+    if (!client) return;
     let alive = true;
-    // A network-stall watchdog keeps a slow or unreachable backend from blocking the whole site.
-    const safetyTimer = window.setTimeout(() => setContentReady(true), 10000);
     async function loadContent() {
       try {
         const [galleryResult, videoResult, servicesResult, settingsResult] = await Promise.all([
@@ -281,13 +252,10 @@ function PortfolioSite() {
         if (!settingsResult.error && settingsResult.data?.value) setSiteConfig({ ...defaultConfig, ...(settingsResult.data.value as Partial<SiteConfig>) });
       } catch (error) {
         console.error('Could not load portfolio content:', error);
-      } finally {
-        window.clearTimeout(safetyTimer);
-        if (alive) setContentReady(true);
       }
     }
     void loadContent();
-    return () => { alive = false; window.clearTimeout(safetyTimer); };
+    return () => { alive = false; };
   }, []);
 
   const allWorkPreview = useMemo(() => {
@@ -361,21 +329,6 @@ function PortfolioSite() {
 
   return (
     <div className="site-shell">
-      <AnimatePresence>
-        {!loadingDismissed && (
-          <motion.div
-            className="studio-loading-screen"
-            role="status"
-            aria-live="polite"
-            initial={reduceMotion ? false : { opacity: 1 }}
-            exit={reduceMotion ? { opacity: 0 } : { opacity: 0 }}
-            transition={{ duration: reduceMotion ? 0 : 0.7, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <div className="studio-loading-brand"><span className="wordmark-icon"><Aperture size={30} strokeWidth={1.3} /></span><span><strong>MEERA</strong><small>PHOTO STUDIO</small></span></div>
-            <span className="studio-loading-track" aria-hidden="true"><span /></span>
-          </motion.div>
-        )}
-      </AnimatePresence>
       <header className="site-header">
         <a href="#home" className="wordmark" aria-label="Meera Photo Studio home">
           <span className="wordmark-icon"><Aperture size={24} strokeWidth={1.4} /></span>
