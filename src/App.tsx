@@ -420,6 +420,7 @@ function PortfolioSite() {
             {['Wedding Photography', 'Pre-Wedding Shoots', 'Birthday Photography', 'Retirement & Anniversary Photography', 'Events & Celebrations', 'School & College Shoots', 'Sports Photography', 'Karizma Albums (Designer Albums)'].map((service, index) => (
               <button key={service} onClick={() => openWhatsApp(service)}><span>{String(index + 1).padStart(2, '0')}</span><strong>{service}</strong><ArrowUpRight size={19} /></button>
             ))}
+            <button className="booking-custom" onClick={() => window.open('https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent('Hello Meera Photo Studio! I have a photography requirement that is not listed in your services. I would like to discuss the details.'), '_blank', 'noopener,noreferrer')}><span>09</span><strong>Something Else? Let's Discuss Together.</strong><MessageCircle size={19} /></button>
             <p>Also accepting enquiries for institutional shoots, sports events, films, drone shoots, portraits and designer Karizma Albums.</p>
           </div>
         </section>
@@ -505,6 +506,10 @@ function PortfolioSite() {
             <div className="eyebrow"><span /> BEGIN A CONVERSATION</div>
             <h2>Let's create<br /><em>something memorable.</em></h2>
             <p>Share a little about what you're planning. We'll get back to you to discuss the details and availability.</p>
+            <div className="contact-action-buttons">
+              <a className="contact-action-chat" href={wa('a photography booking')} target="_blank" rel="noreferrer" aria-label="Let's Chat with Meera Photo Studio on WhatsApp"><MessageCircle size={18} aria-hidden="true" /><span>Let's Chat</span></a>
+              <a className="contact-action-call" href="tel:+919827486699" aria-label="Call Meera Photo Studio"><Phone size={18} aria-hidden="true" /><span>Call Now</span></a>
+            </div>
             <div className="contact-details">
               <a href={'tel:' + (siteConfig.phone || PHONE_DISPLAY).replace(/[^+\d]/g, '')}><span className="contact-icon"><Phone size={17} /></span><span><small>CALL THE STUDIO</small><strong>{siteConfig.phone || PHONE_DISPLAY}</strong></span><ArrowUpRight size={16} /></a>
               <a href={'mailto:' + (siteConfig.email || EMAIL_ADDRESS)}><span className="contact-icon"><Mail size={17} /></span><span><small>EMAIL</small><strong>{siteConfig.email || EMAIL_ADDRESS}</strong></span><ArrowUpRight size={16} /></a>
