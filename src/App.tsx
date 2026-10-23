@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import {
   ArrowDown, ArrowRight, ArrowUpRight, Camera, Check, ChevronLeft, ChevronRight,
-  Clapperboard, Clock3, Instagram, Mail, MapPin, Menu, Phone, Play, Send,
+  Clapperboard, Clock3, Instagram, Mail, MapPin, Menu, Phone, Play, Send, CalendarCheck, BookOpen,
   Sparkles, Video, X, MessageCircle, Aperture, Users, Award, Heart
 } from 'lucide-react';
 import { isSupabaseConfigured, supabase, type GalleryItem, type Enquiry } from './lib/supabase';
@@ -391,6 +391,30 @@ function PortfolioSite() {
         </section>
 
         <section className="services section-pad" id="services">
+          <motion.div className="how-we-work" initial={reduceMotion ? false : { opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.18 }} transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}>
+            <div className="how-work-heading">
+              <div className="how-work-eyebrow">— HOW WE WORK</div>
+              <h2>From First Call to <em>Final Album</em></h2>
+              <p>A simple, unhurried process — so you can stay present in your moments while we take care of the rest.</p>
+            </div>
+            <div className="how-work-steps">
+              {[
+                { number: '01', title: 'Consult', Icon: MessageCircle, description: 'Share your date, venue and ideas with us over a call, WhatsApp or a studio visit.' },
+                { number: '02', title: 'Plan', Icon: CalendarCheck, description: 'We recommend the right package, shot list and locations to suit your event and budget.' },
+                { number: '03', title: 'Capture', Icon: Aperture, description: 'On the day, our team covers every ritual, emotion and candid moment — calmly and on time.' },
+                { number: '04', title: 'Deliver', Icon: BookOpen, description: 'Carefully edited photos, films and premium albums, delivered ready to treasure.' },
+              ].map(({ number, title, Icon, description }, index) => (
+                <motion.article className="how-work-step" key={number} initial={reduceMotion ? false : { opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.25 }} transition={{ duration: 0.48, delay: reduceMotion ? 0 : index * 0.12, ease: [0.22, 1, 0.36, 1] }}>
+                  <div className="how-work-icon-wrap">
+                    <span className="how-work-number">{number}</span>
+                    <span className="how-work-icon"><Icon size={27} strokeWidth={1.45} aria-hidden="true" /></span>
+                  </div>
+                  <h3>{title}</h3>
+                  <p>{description}</p>
+                </motion.article>
+              ))}
+            </div>
+          </motion.div>
           <div className="section-heading">
             <div><div className="eyebrow"><span /> WHAT WE DO</div><h2>Made for the moments<br /><em>that matter.</em></h2></div>
             <p>Thoughtful photography and cinematic storytelling for life's milestones, celebrations and meaningful work.</p>
