@@ -372,7 +372,6 @@ function PortfolioSite() {
             transition={{ duration: reduceMotion ? 0 : 0.7, ease: [0.22, 1, 0.36, 1] }}
           >
             <div className="studio-loading-brand"><span className="wordmark-icon"><Aperture size={30} strokeWidth={1.3} /></span><span><strong>MEERA</strong><small>PHOTO STUDIO</small></span></div>
-            <p>Welcome to Meera Photo Studio. High-quality photographs may take a little time to load on your first visit. Kindly wait a moment while the images appear. Thank you for your patience.</p>
             <span className="studio-loading-track" aria-hidden="true"><span /></span>
           </motion.div>
         )}
