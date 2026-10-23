@@ -1003,3 +1003,74 @@ main > section[id] { scroll-margin-top: 96px; }
   .booking-list > .booking-custom { grid-template-columns: 28px 1fr 20px; gap: 10px; padding: 16px 10px; }
   .booking-list > .booking-custom > strong { font-size: 22px; line-height: 1.2; }
 }
+
+
+/* Make the custom enquiry unmistakable and place it first in the booking list */
+.booking-list > button.booking-custom {
+  position: relative;
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) 24px;
+  gap: 13px;
+  align-items: center;
+  width: 100%;
+  margin: 0 0 22px;
+  padding: 19px 16px;
+  border: 1px solid #C9A96E;
+  border-left: 4px solid #C9A96E;
+  border-radius: 3px;
+  background: linear-gradient(105deg, rgba(201,169,110,.18), rgba(201,169,110,.07));
+  color: #F2F0EA;
+  text-align: left;
+  box-shadow: 0 10px 30px rgba(0,0,0,.12);
+  cursor: pointer;
+}
+.booking-list > button.booking-custom > span {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(201,169,110,.6);
+  border-radius: 50%;
+  color: #E2C58F;
+}
+.booking-list > button.booking-custom > strong {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: #F2F0EA;
+  font-family: var(--serif);
+  font-size: clamp(20px, 2vw, 26px);
+  line-height: 1.15;
+  font-weight: 500;
+}
+.booking-list > button.booking-custom > strong em {
+  color: #E2C58F;
+  font-style: normal;
+}
+.booking-list > button.booking-custom > strong small {
+  color: #C1CBD7;
+  font-family: inherit;
+  font-size: 10px;
+  line-height: 1.6;
+  font-weight: 400;
+  letter-spacing: .01em;
+}
+.booking-list > button.booking-custom > svg { color: #E2C58F; }
+.booking-list > button.booking-custom:hover {
+  background: linear-gradient(105deg, rgba(201,169,110,.26), rgba(201,169,110,.12));
+  border-color: #E2C58F;
+  transform: translateY(-2px);
+}
+.booking-list > button.booking-custom:hover > strong { transform: none; }
+@media (max-width: 700px) {
+  .booking-band { grid-template-columns: minmax(0, 1fr); gap: 30px; }
+  .booking-list { width: 100%; min-width: 0; }
+  .booking-list > button.booking-custom {
+    grid-template-columns: 32px minmax(0, 1fr) 20px;
+    gap: 10px;
+    padding: 16px 11px;
+    margin-bottom: 18px;
+  }
+  .booking-list > button.booking-custom > strong { font-size: 21px; }
+  .booking-list > button.booking-custom > strong small { font-size: 10px; }
+}
