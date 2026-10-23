@@ -103,6 +103,7 @@ function PortfolioSite() {
   const reduceMotion = useReducedMotion();
   const [menuOpen, setMenuOpen] = useState(false);
   const [category, setCategory] = useState('All Work');
+  const [showAllWork, setShowAllWork] = useState(false);
   const [photos, setPhotos] = useState<GalleryItem[]>([]);
   const [usingDemoPhotos, setUsingDemoPhotos] = useState(false);
   const [videos, setVideos] = useState<VideoProject[]>([]);
@@ -140,7 +141,15 @@ function PortfolioSite() {
     return () => { alive = false; };
   }, []);
 
-  const visiblePhotos = useMemo(() => category === 'All Work' ? photos : photos.filter((photo) => photo.category === category), [photos, category]);
+  const allWorkPreview = useMemo(() => {
+    const seenCategories = new Set<string>();
+    return photos.filter((photo) => {
+      if (seenCategories.has(photo.category)) return false;
+      seenCategories.add(photo.category);
+      return true;
+    });
+  }, [photos]);
+  const visiblePhotos = useMemo(() => category === 'All Work' ? (showAllWork ? photos : allWorkPreview) : photos.filter((photo) => photo.category === category), [photos, category, showAllWork, allWorkPreview]);
   const lightboxPhoto = lightboxIndex === null ? null : visiblePhotos[lightboxIndex];
 
   useEffect(() => {
@@ -294,7 +303,7 @@ function PortfolioSite() {
             <p>Every story has its own rhythm. Browse by occasion and explore a few of the ways we see the world.</p>
           </div>
           <div className="filter-row" role="group" aria-label="Filter portfolio by category">
-            {categoryNames.map((item) => <button type="button" key={item} aria-pressed={category === item} className={category === item ? 'filter-pill active' : 'filter-pill'} onClick={() => { setCategory(item); setLightboxIndex(null); }}>{item}</button>)}
+            {categoryNames.map((item) => <button type="button" key={item} aria-pressed={category === item} className={category === item ? 'filter-pill active' : 'filter-pill'} onClick={() => { setCategory(item); setShowAllWork(false); setLightboxIndex(null); }}>{item}</button>)}
           </div>
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
@@ -322,7 +331,8 @@ function PortfolioSite() {
               ))}
             </motion.div>
           </AnimatePresence>
-          {visiblePhotos.length === 0 && <div className="empty-gallery"><Camera size={27} /><h3>More stories are on the way.</h3><p>There are no published photographs in this category yet.</p><button className="text-link" onClick={() => setCategory('All Work')}>View all work <ArrowRight size={15} /></button></div>}
+          {visiblePhotos.length === 0 && <div className="empty-gallery"><Camera size={27} /><h3>More stories are on the way.</h3><p>There are no published photographs in this category yet.</p><button className="text-link" onClick={() => { setCategory('All Work'); setShowAllWork(false); }}>View all work <ArrowRight size={15} /></button></div>}
+          {category === 'All Work' && photos.length > allWorkPreview.length && <div className="portfolio-view-all"><button className="button button-outline-light" type="button" onClick={() => { setShowAllWork(!showAllWork); setLightboxIndex(null); }}>{showAllWork ? 'Show one from each category' : 'View all ' + photos.length + ' photographs'} <ArrowRight size={16} /></button></div>}
           <div className="portfolio-bottom"><span>PHOTOGRAPHS THAT TAKE YOU BACK.</span><button className="text-link" onClick={() => openWhatsApp('a portfolio consultation')}>Discuss your project <ArrowUpRight size={15} /></button></div>
         </section>
 
