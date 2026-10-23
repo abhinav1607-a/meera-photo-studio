@@ -17,6 +17,8 @@ export type GalleryItem = {
   is_featured: boolean;
   position: number;
   created_at?: string;
+  cloudinary_public_id?: string | null;
+  storage_path?: string | null;
 };
 
 export type Enquiry = {
