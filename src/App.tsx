@@ -190,17 +190,19 @@ function PortfolioSite() {
     if (!sections.length) return;
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     root.classList.add('cinematic-ready');
-    const markVisible = (section: HTMLElement) => section.classList.add('cinematic-visible');
+    const setSectionVisibility = (section: HTMLElement, visible: boolean) => {
+      section.classList.toggle('cinematic-visible', visible);
+    };
     const observer = reduceMotion ? null : new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          markVisible(entry.target as HTMLElement);
-          observer?.unobserve(entry.target);
-        }
+        // Toggle in both directions so the section being left fades out as
+        // the next section enters, rather than staying visible forever.
+        setSectionVisibility(entry.target as HTMLElement, entry.isIntersecting);
       });
     }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
     sections.forEach((section, index) => {
-      if (index === 0 || reduceMotion) markVisible(section);
+      if (reduceMotion) setSectionVisibility(section, true);
+      else if (index === 0) setSectionVisibility(section, true);
       else observer?.observe(section);
     });
 
