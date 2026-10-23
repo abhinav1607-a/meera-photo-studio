@@ -240,11 +240,13 @@ function PortfolioSite() {
     const image = new Image();
     let alive = true;
     const finish = () => { if (alive) setHeroImageReady(true); };
+    const safetyTimer = window.setTimeout(finish, 10000);
+    setHeroImageReady(false);
     image.onload = finish;
     image.onerror = finish;
     image.src = siteConfig.hero_image;
     if (image.complete) finish();
-    return () => { alive = false; image.onload = null; image.onerror = null; };
+    return () => { alive = false; window.clearTimeout(safetyTimer); image.onload = null; image.onerror = null; };
   }, [siteConfig.hero_image]);
 
   useEffect(() => {
@@ -255,6 +257,8 @@ function PortfolioSite() {
     const client = supabase;
     if (!client) { setContentReady(true); return; }
     let alive = true;
+    // A network-stall watchdog keeps a slow or unreachable backend from blocking the whole site.
+    const safetyTimer = window.setTimeout(() => setContentReady(true), 10000);
     async function loadContent() {
       try {
         const [galleryResult, videoResult, servicesResult, settingsResult] = await Promise.all([
@@ -271,11 +275,12 @@ function PortfolioSite() {
       } catch (error) {
         console.error('Could not load portfolio content:', error);
       } finally {
+        window.clearTimeout(safetyTimer);
         if (alive) setContentReady(true);
       }
     }
     void loadContent();
-    return () => { alive = false; };
+    return () => { alive = false; window.clearTimeout(safetyTimer); };
   }, []);
 
   const allWorkPreview = useMemo(() => {
