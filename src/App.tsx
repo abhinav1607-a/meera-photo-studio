@@ -56,7 +56,7 @@ const demoPhotos: GalleryItem[] = [
   { id: 'sample-4', title: 'In Their Element', caption: 'Portraits · sample imagery', category: 'Portraits', image_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1400&q=85', alt_text: 'Expressive studio portrait', is_published: true, is_featured: false, position: 4 },
   { id: 'sample-5', title: 'The Joy Between Frames', caption: 'Candid · sample imagery', category: 'Candid Photography', image_url: 'https://images.unsplash.com/photo-1529636798458-92182e662485?auto=format&fit=crop&w=1400&q=85', alt_text: 'Candid moment at an outdoor celebration', is_published: true, is_featured: false, position: 5 },
   { id: 'sample-6', title: 'A Wider Perspective', caption: 'Locations · sample imagery', category: 'Drone Photography', image_url: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1400&q=85', alt_text: 'Wide landscape with a dramatic sky', is_published: true, is_featured: false, position: 6 },
-  { id: 'sample-7', title: 'Made to Remember', caption: 'Album stories · sample imagery', category: 'Kazima Albums', image_url: 'https://images.unsplash.com/photo-1523438885200-e635ba2c371e?auto=format&fit=crop&w=1400&q=85', alt_text: 'Wedding details in soft natural light', is_published: true, is_featured: false, position: 7 },
+  { id: 'sample-7', title: 'Made to Remember', caption: 'Album stories · sample imagery', category: 'Karizma Albums', image_url: 'https://images.squarespace-cdn.com/content/v1/53c734d5e4b057549ea4fe4c/1485127823459-83LH0GJZS1MWRBEIYK3A/Luxury%2BWedding%2BAlbums%2B-%2BEvelyn%2BMolina-23.jpg?format=1500w', alt_text: 'Wedding details in soft natural light', is_published: true, is_featured: false, position: 7 },
   { id: 'sample-8', title: 'People and Purpose', caption: 'Events · sample imagery', category: 'Events', image_url: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=1400&q=85', alt_text: 'Elegant event space prepared for a gathering', is_published: true, is_featured: false, position: 8 },
   { id: 'sample-9', title: 'The Details Matter', caption: 'Editorial · sample imagery', category: 'Commercial Photography', image_url: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1400&q=85', alt_text: 'Creative event lighting and atmosphere', is_published: true, is_featured: false, position: 9 },
 ];
@@ -69,14 +69,14 @@ const baseServices = [
   { title: 'Videography & Films', short: 'Atmospheric films and highlight edits that bring the day back to life.', image: 'https://images.unsplash.com/photo-1492619375914-88005aa9e8fb?auto=format&fit=crop&w=900&q=80', number: '05' },
   { title: 'Drone Cinematography', short: 'Aerial perspectives for suitable venues, outdoor shoots and events.', image: 'https://images.unsplash.com/photo-1473968512647-3e447244af8f?auto=format&fit=crop&w=900&q=80', number: '06' },
   { title: 'Portraits & Families', short: 'Honest portraits and family photographs to return to for years.', image: 'https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=900&q=80', number: '07' },
-  { title: 'Kazima Album Making', short: 'Beautifully arranged photographs, thoughtfully brought together in print.', image: 'https://images.unsplash.com/photo-1523438885200-e635ba2c371e?auto=format&fit=crop&w=900&q=80', number: '08' },
+  { title: 'Karizma Album Making', short: 'Beautifully arranged photographs, thoughtfully brought together in print.', image: 'https://images.unsplash.com/photo-1523438885200-e635ba2c371e?auto=format&fit=crop&w=900&q=80', number: '08' },
   { title: 'Retirement & Anniversary Celebrations', short: 'Warm, respectful coverage of milestone anniversaries, retirement ceremonies and the people who make them memorable.', image: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=900&q=80', number: '09' },
   { title: 'School & College Shoots', short: 'Institutional events, student portraits, group photographs, annual functions and cultural programs.', image: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=900&q=80', number: '10' },
   { title: 'Sports Photography', short: 'Action shots, tournaments, competitions, team portraits and the moments that define sporting events.', image: 'https://images.unsplash.com/photo-1461896836934-028b1a6b1e9c?auto=format&fit=crop&w=900&q=80', number: '11' },
   { title: 'Karizma Albums (Designer Albums)', short: 'Premium designer albums with professionally arranged layouts and high-quality presentation for memorable occasions.', image: 'https://images.unsplash.com/photo-1523438885200-e635ba2c371e?auto=format&fit=crop&w=900&q=80', number: '12' },
 ];
 
-const categoryNames = ['All Work', 'Weddings', 'Pre-Wedding', 'Ring Ceremony', 'Birthdays', 'Retirement & Anniversary', 'Events', 'Candid Photography', 'Portraits', 'Family Photography', 'Commercial Photography', 'Sports Photography', 'Drone Photography', 'Cinematic Projects', 'Kazima Albums'];
+const categoryNames = ['All Work', 'Weddings', 'Pre-Wedding', 'Ring Ceremony', 'Birthdays', 'Retirement & Anniversary', 'Events', 'Candid Photography', 'Portraits', 'Family Photography', 'Commercial Photography', 'Sports Photography', 'Drone Photography', 'Cinematic Projects', 'Karizma Albums'];
 
 const wa = (service: string, details = '') => 'https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent('Hello Meera Photo Studio, I would like to enquire about ' + service + '.' + (details ? '\n\n' + details : '') + ' Please share your packages, availability, and pricing.');
 
@@ -335,7 +335,7 @@ function PortfolioSite() {
           <span><strong>MEERA</strong><small>PHOTO STUDIO</small></span>
         </a>
         <nav className={menuOpen ? 'main-nav nav-open' : 'main-nav'} aria-label="Main navigation">
-          {[['About', '#about'], ['Services', '#services'], ['Portfolio', '#portfolio'], ['Kazima Albums', '#albums'], ['Films', '#films'], ['Contact', '#contact']].map(([label, href]) => (
+          {[['About', '#about'], ['Services', '#services'], ['Portfolio', '#portfolio'], ['Karizma Albums', '#albums'], ['Films', '#films'], ['Contact', '#contact']].map(([label, href]) => (
             <a key={label} href={href} onClick={() => setMenuOpen(false)}>{label}</a>
           ))}
           <a className="nav-book mobile-book" href="#contact" onClick={() => setMenuOpen(false)}>Book a Shoot <ArrowUpRight size={15} /></a>
@@ -465,14 +465,14 @@ function PortfolioSite() {
         </section>
 
         <section className="album-feature" id="albums">
-          <div className="album-image"><img src="https://images.unsplash.com/photo-1523438885200-e635ba2c371e?auto=format&fit=crop&w=1400&q=85" alt="Beautifully arranged wedding album details, sample imagery" loading="lazy" /><span className="image-caption">THE PHYSICAL BEAUTY OF A MEMORY</span></div>
+          <div className="album-image"><img src="https://images.squarespace-cdn.com/content/v1/53c734d5e4b057549ea4fe4c/1485127823459-83LH0GJZS1MWRBEIYK3A/Luxury%2BWedding%2BAlbums%2B-%2BEvelyn%2BMolina-23.jpg?format=1500w" alt="Beautifully arranged wedding album details, sample imagery" loading="lazy" /><span className="image-caption">THE PHYSICAL BEAUTY OF A MEMORY</span></div>
           <div className="album-copy">
             <div className="eyebrow"><span /> THE KAZIMA ALBUM EXPERIENCE</div>
             <span className="album-overline">A STORY, HELD IN YOUR HANDS</span>
             <h2>Memories,<br /><em>beautifully bound.</em></h2>
-            <p>Some photographs deserve more than a place on a screen. Kazima Album Making brings your chosen images together in a thoughtful, beautifully arranged keepsake made to be revisited and shared.</p>
+            <p>Some photographs deserve more than a place on a screen. Karizma Album Making brings your chosen images together in a thoughtful, beautifully arranged keepsake made to be revisited and shared.</p>
             <ul><li><Check size={15} /> Personalised image selection and layout</li><li><Check size={15} /> Wedding, pre-wedding and family albums</li><li><Check size={15} /> An elegant way to preserve your story</li></ul>
-            <button className="button button-dark" onClick={() => openWhatsApp('Kazima Album Making')}>Enquire about Kazima Albums <ArrowUpRight size={16} /></button>
+            <button className="button button-dark" onClick={() => openWhatsApp('Karizma Album Making')}>Enquire about Karizma Albums <ArrowUpRight size={16} /></button>
           </div>
         </section>
 
@@ -523,7 +523,7 @@ function PortfolioSite() {
               <label>Phone number <span>*</span><input required minLength={7} maxLength={30} value={formState.phone} onChange={(e) => setFormState({ ...formState, phone: e.target.value })} placeholder="+91" autoComplete="tel" /></label>
             </div>
             <label>Email address <span className="optional">(optional)</span><input type="email" maxLength={254} value={formState.email} onChange={(e) => setFormState({ ...formState, email: e.target.value })} placeholder="you@example.com" autoComplete="email" /></label>
-            <label>What are you planning? <span>*</span><select required value={formState.service} onChange={(e) => setFormState({ ...formState, service: e.target.value })}>{['Wedding Photography', 'Pre-Wedding Shoots', 'Birthday Photography', 'Events & Celebrations', 'Videography', 'Drone Shoot', 'Portrait & Family Photography', 'Kazima Album Making', 'Commercial / Institutional Photography', 'Other Enquiry'].map((item) => <option key={item}>{item}</option>)}</select></label>
+            <label>What are you planning? <span>*</span><select required value={formState.service} onChange={(e) => setFormState({ ...formState, service: e.target.value })}>{['Wedding Photography', 'Pre-Wedding Shoots', 'Birthday Photography', 'Events & Celebrations', 'Videography', 'Drone Shoot', 'Portrait & Family Photography', 'Karizma Album Making', 'Commercial / Institutional Photography', 'Other Enquiry'].map((item) => <option key={item}>{item}</option>)}</select></label>
             <div className="form-row">
               <label>Preferred date <span className="optional">(optional)</span><input type="date" value={formState.event_date} onChange={(e) => setFormState({ ...formState, event_date: e.target.value })} /></label>
               <label>Event location <span className="optional">(optional)</span><input maxLength={200} value={formState.event_location} onChange={(e) => setFormState({ ...formState, event_location: e.target.value })} placeholder="City or venue" /></label>
@@ -540,7 +540,7 @@ function PortfolioSite() {
       <footer className="site-footer">
         <div className="footer-main">
           <div className="footer-brand"><a href="#home" className="wordmark footer-wordmark"><span className="wordmark-icon"><Aperture size={25} strokeWidth={1.3} /></span><span><strong>MEERA</strong><small>PHOTO STUDIO</small></span></a><p>Preserving moments.<br />Creating legacies.</p><span className="footer-location"><MapPin size={14} /> RAIPUR, CHHATTISGARH, INDIA</span></div>
-          <div className="footer-nav"><span className="footer-label">EXPLORE</span><a href="#about">About the studio</a><a href="#services">Photography services</a><a href="#portfolio">Portfolio</a><a href="#albums">Kazima Albums</a><a href="#films">Videography</a></div>
+          <div className="footer-nav"><span className="footer-label">EXPLORE</span><a href="#about">About the studio</a><a href="#services">Photography services</a><a href="#portfolio">Portfolio</a><a href="#albums">Karizma Albums</a><a href="#films">Videography</a></div>
           <div className="footer-nav"><span className="footer-label">GET IN TOUCH</span><a href={'tel:' + (siteConfig.phone || PHONE_DISPLAY).replace(/[^+\d]/g, '')}>{siteConfig.phone || PHONE_DISPLAY}</a><a href={'mailto:' + (siteConfig.email || EMAIL_ADDRESS)}>{siteConfig.email || EMAIL_ADDRESS}</a><a href={wa('a photography booking')} target="_blank" rel="noreferrer">WhatsApp enquiries <ArrowUpRight size={13} /></a><span className="footer-open">Bookings open for upcoming dates</span></div>
         </div>
         <div className="footer-associations"><span>OFFICIAL PHOTOGRAPHER FOR</span><p>Sports & Youth Welfare, Chhattisgarh <i>·</i> C.G. Olympic Association <i>·</i> Public Works Department, Chhattisgarh <i>·</i> C.G. Volleyball Association <i>·</i> C.G. Archery Association <i>·</i> C.G. Table Tennis Association <i>·</i> Corporate Sector <i>·</i> Schools & Colleges</p></div>
