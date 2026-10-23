@@ -3,7 +3,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import {
   ArrowDown, ArrowRight, ArrowUpRight, Camera, Check, ChevronLeft, ChevronRight,
   Clapperboard, Clock3, Instagram, Mail, MapPin, Menu, Phone, Play, Send,
-  Sparkles, Video, X, MessageCircle, Aperture
+  Sparkles, Video, X, MessageCircle, Aperture, Users, Award, Heart
 } from 'lucide-react';
 import { isSupabaseConfigured, supabase, type GalleryItem, type Enquiry } from './lib/supabase';
 
