@@ -219,11 +219,11 @@ function PortfolioSite() {
       if (window.location.hash !== hash) history.pushState(null, '', hash);
       setMenuOpen(false);
     };
-    root.addEventListener('click', onAnchorClick);
+    root.addEventListener('click', onAnchorClick as EventListener);
     return () => {
       root.classList.remove('cinematic-ready');
       observer?.disconnect();
-      root.removeEventListener('click', onAnchorClick);
+      root.removeEventListener('click', onAnchorClick as EventListener);
     };
   }, []);
 
