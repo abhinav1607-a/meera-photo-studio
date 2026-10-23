@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import {
   ArrowDown, ArrowRight, ArrowUpRight, Camera, Check, ChevronLeft, ChevronRight,
@@ -97,6 +97,73 @@ function openWhatsApp(service: string, details = '') {
 function App() {
   const isAdmin = window.location.pathname.replace(/\/$/, '') === '/admin';
   return isAdmin ? <AdminPage /> : <PortfolioSite />;
+}
+
+
+const studioStats = [
+  { label: 'SESSIONS COMPLETED', target: 6000, suffix: '+', Icon: Camera },
+  { label: 'HAPPY CLIENTS', target: 1000, suffix: '+', Icon: Users },
+  { label: 'YEARS EXPERIENCE', target: 30, suffix: '+', Icon: Award },
+  { label: 'CLIENT SATISFACTION', target: 99, suffix: '%', Icon: Heart },
+];
+
+function AboutStatistics() {
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  const frameRef = useRef<number | null>(null);
+  const startRef = useRef<number | null>(null);
+  const [values, setValues] = useState<number[]>(studioStats.map(() => 0));
+
+  useEffect(() => {
+    const panel = panelRef.current;
+    if (!panel) return;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let visible = false;
+    const cancelFrame = () => {
+      if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
+      frameRef.current = null;
+      startRef.current = null;
+    };
+    const reset = () => {
+      cancelFrame();
+      setValues(studioStats.map(() => 0));
+    };
+    const animate = (timestamp: number) => {
+      if (startRef.current === null) startRef.current = timestamp;
+      const progress = Math.min((timestamp - startRef.current) / 1800, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setValues(studioStats.map((stat) => progress >= 1 ? stat.target : Math.floor(stat.target * eased)));
+      if (progress < 1 && visible) frameRef.current = requestAnimationFrame(animate);
+      else frameRef.current = null;
+    };
+    const observer = new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      if (visible) {
+        cancelFrame();
+        if (reduceMotion) setValues(studioStats.map((stat) => stat.target));
+        else {
+          setValues(studioStats.map(() => 0));
+          frameRef.current = requestAnimationFrame(animate);
+        }
+      } else reset();
+    }, { threshold: 0.25 });
+    observer.observe(panel);
+    return () => {
+      observer.disconnect();
+      cancelFrame();
+    };
+  }, []);
+
+  return (
+    <div className="about-stats" ref={panelRef} aria-label="Meera Photo Studio statistics">
+      {studioStats.map(({ label, target, suffix, Icon }, index) => (
+        <div className="about-stat" key={label}>
+          <Icon className="about-stat-icon" size={22} strokeWidth={1.35} aria-hidden="true" />
+          <strong aria-label={target.toLocaleString('en-IN') + suffix}>{values[index].toLocaleString('en-IN')}<span>{suffix}</span></strong>
+          <span className="about-stat-label">{label}</span>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 function PortfolioSite() {
@@ -247,20 +314,30 @@ function PortfolioSite() {
           <div className="hero-side-note">REAL MOMENTS. LASTING STORIES.</div>
         </section>
 
-        <section className="intro section-pad" id="about">
-          <div className="intro-meta"><span className="section-index">01 / ABOUT THE STUDIO</span><span className="vertical-rule" /></div>
-          <div className="intro-main">
-            <div className="eyebrow"><span /> THE PERSON BEHIND THE LENS</div>
-            <h2>A legacy behind<br /><em>the lens.</em></h2>
-            <div className="intro-grid">
-              <p className="intro-lead">{siteConfig.about_text}</p>
-              <div className="intro-detail">
-                <p>From intimate family moments to weddings, sporting events and institutional assignments, every frame is approached with care, calm direction and an eye for the details that matter.</p>
-                <a href="#portfolio" className="text-link">Discover the work <ArrowUpRight size={16} /></a>
+        <section className="about-editorial section-pad" id="about">
+          <div className="about-layout">
+            <div className="about-portrait-wrap">
+              <div className="about-portrait">
+                <img src="/about-mukesh.jpg" alt="Mukesh Agrawal, lead photographer at Meera Photo Studio" fetchPriority="high" />
+                <div className="about-portrait-shade" />
+                <div className="about-identity"><h3>Mukesh Agrawal</h3><span>LEAD PHOTOGRAPHER</span></div>
+              </div>
+              <div className="about-experience-badge"><strong>30<span>+</span></strong><span>YEARS BEHIND<br />THE LENS</span></div>
+            </div>
+            <div className="about-copy">
+              <div className="eyebrow"><span /> 01 — ABOUT THE STUDIO</div>
+              <h2>Crafting Visual<br /><em>Stories That Last Forever</em></h2>
+              <p className="about-lead">With over 30 years of experience in professional photography and videography, Mukesh Agrawal specializes in capturing authentic emotions and meaningful moments. His approach combines technical expertise with artistic vision to create timeless photographs and cinematic films.</p>
+              <p className="about-secondary">From weddings and pre-wedding celebrations to birthdays, events, and cinematic films, every moment deserves to be preserved with care, creativity, and attention to detail. Meera Photo Studio is committed to creating photographs and films that turn meaningful occasions into lasting memories.</p>
+              <div className="about-features">
+                <div><span><Check size={14} /></span>Traditional &amp; candid photography</div>
+                <div><span><Check size={14} /></span>Premium albums &amp; prints</div>
+                <div><span><Check size={14} /></span>Photography and videography</div>
+                <div><span><Check size={14} /></span>Professional event coverage</div>
               </div>
             </div>
-            <div className="experience-line"><strong>30<span>+</span></strong><div><b>YEARS OF EXPERIENCE</b><p>Craft shaped by time, trust and thousands of moments.</p></div><div className="experience-mark"><Camera size={38} strokeWidth={1} /><span>MEERA PHOTO STUDIO · RAIPUR</span></div></div>
           </div>
+          <AboutStatistics />
         </section>
 
         <section className="services section-pad" id="services">
