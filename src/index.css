@@ -836,3 +836,66 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   color: #ffffff;
   stroke: #ffffff;
 }
+
+
+/* Cinematic motion blur accents and number-counting animation */
+.about-portrait img {
+  transition: filter .65s cubic-bezier(.2,.7,.2,1), transform 1s cubic-bezier(.2,.7,.2,1);
+}
+.about-portrait:hover img {
+  filter: blur(1.2px) saturate(.92);
+  transform: scale(1.035);
+}
+.about-portrait-shade {
+  transition: opacity .45s ease;
+}
+.about-portrait:hover .about-portrait-shade { opacity: .88; }
+.about-stat {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.about-stat::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: -30% auto -30% -75%;
+  width: 55%;
+  opacity: 0;
+  background: linear-gradient(105deg, transparent 0%, rgba(102,130,158,.04) 28%, rgba(102,130,158,.24) 48%, rgba(255,255,255,.55) 52%, rgba(102,130,158,.08) 65%, transparent 100%);
+  transform: skewX(-18deg);
+  pointer-events: none;
+}
+.about-stat strong {
+  display: inline-block;
+  transform-origin: center;
+  will-change: contents, filter, transform;
+  animation: counter-focus-in .8s cubic-bezier(.16,1,.3,1) both;
+}
+.about-stat:nth-child(2) strong { animation-delay: .08s; }
+.about-stat:nth-child(3) strong { animation-delay: .16s; }
+.about-stat:nth-child(4) strong { animation-delay: .24s; }
+.about-stats:has(.about-stat strong) .about-stat::before {
+  animation: stat-motion-sweep 1.15s cubic-bezier(.16,1,.3,1) both;
+}
+.about-stat:nth-child(2)::before { animation-delay: .08s !important; }
+.about-stat:nth-child(3)::before { animation-delay: .16s !important; }
+.about-stat:nth-child(4)::before { animation-delay: .24s !important; }
+@keyframes counter-focus-in {
+  0% { filter: blur(7px); opacity: .15; transform: translateY(9px) scale(.96); }
+  55% { filter: blur(1.5px); opacity: 1; }
+  100% { filter: blur(0); opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes stat-motion-sweep {
+  0% { left: -75%; opacity: 0; }
+  18% { opacity: 1; }
+  100% { left: 140%; opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .about-portrait img, .about-stat strong, .about-stats:has(.about-stat strong) .about-stat::before {
+    animation: none !important;
+    transition: none !important;
+    filter: none !important;
+    transform: none !important;
+  }
+}
