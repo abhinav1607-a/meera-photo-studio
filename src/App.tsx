@@ -180,6 +180,7 @@ function PortfolioSite() {
   const [contentReady, setContentReady] = useState(!isSupabaseConfigured);
   const [heroImageReady, setHeroImageReady] = useState(false);
   const [loadingDismissed, setLoadingDismissed] = useState(false);
+  const [minimumLoadingTimeElapsed, setMinimumLoadingTimeElapsed] = useState(false);
   const [videos, setVideos] = useState<VideoProject[]>([]);
   const [serviceContent, setServiceContent] = useState(baseServices);
   const [siteConfig, setSiteConfig] = useState<SiteConfig>(defaultConfig);
@@ -250,8 +251,14 @@ function PortfolioSite() {
   }, [siteConfig.hero_image]);
 
   useEffect(() => {
-    if (contentReady && heroImageReady) setLoadingDismissed(true);
-  }, [contentReady, heroImageReady]);
+    // Keep the welcome screen visible for at least 4.5 seconds so visitors can read it.
+    const minimumReadingTimer = window.setTimeout(() => setMinimumLoadingTimeElapsed(true), 4500);
+    return () => window.clearTimeout(minimumReadingTimer);
+  }, []);
+
+  useEffect(() => {
+    if (contentReady && heroImageReady && minimumLoadingTimeElapsed) setLoadingDismissed(true);
+  }, [contentReady, heroImageReady, minimumLoadingTimeElapsed]);
 
   useEffect(() => {
     const client = supabase;
