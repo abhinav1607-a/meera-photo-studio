@@ -49,6 +49,21 @@ const WHATSAPP_NUMBER = '919827486699';
 const PHONE_DISPLAY = '+91 9827486699';
 const EMAIL_ADDRESS = 'meerastudiorpr@gmail.com';
 
+const INTRO_STORAGE_KEY = 'meeraIntroLoadingCompleted';
+let introCompletedInMemory = false;
+
+function hasCompletedStudioIntro() {
+  if (introCompletedInMemory) return true;
+  try { return window.localStorage.getItem(INTRO_STORAGE_KEY) === 'true'; }
+  catch { return false; }
+}
+
+function markStudioIntroCompleted() {
+  introCompletedInMemory = true;
+  try { window.localStorage.setItem(INTRO_STORAGE_KEY, 'true'); }
+  catch { /* Keep the in-memory fallback when persistent storage is unavailable. */ }
+}
+
 const demoPhotos: GalleryItem[] = [
   { id: 'sample-1', title: 'A Celebration of Love', caption: 'Wedding stories · sample imagery', category: 'Weddings', image_url: 'https://qzvbbytilxyzqslvnocm.supabase.co/storage/v1/object/public/Photos%20For%20website/DSC_1269.JPG', alt_text: 'Wedding celebration in warm evening light', is_published: true, is_featured: true, position: 1 },
   { id: 'sample-2', title: 'Quiet Promises', caption: 'Pre-wedding · sample imagery', category: 'Pre-Wedding', image_url: 'https://images.unsplash.com/photo-1537633552985-df8429e8048b?auto=format&fit=crop&w=1400&q=85', alt_text: 'Couple portrait in a natural setting', is_published: true, is_featured: false, position: 2 },
@@ -172,6 +187,11 @@ function AboutStatistics() {
 
 function PortfolioSite() {
   const reduceMotion = useReducedMotion();
+  const [showStudioIntro, setShowStudioIntro] = useState(() => !hasCompletedStudioIntro());
+  const [introMinimumElapsed, setIntroMinimumElapsed] = useState(false);
+  const [introContentReady, setIntroContentReady] = useState(false);
+  const [introExiting, setIntroExiting] = useState(false);
+  const introExitTimer = useRef<number | null>(null);
   const [activeWorkStep, setActiveWorkStep] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const [category, setCategory] = useState('All Work');
@@ -187,6 +207,53 @@ function PortfolioSite() {
   const [formMessage, setFormMessage] = useState('');
   const [formError, setFormError] = useState('');
   const [sending, setSending] = useState(false);
+
+  useEffect(() => {
+    if (!showStudioIntro) return;
+    let cancelled = false;
+    const minimumTimer = window.setTimeout(() => setIntroMinimumElapsed(true), 3500);
+    const loadEssentialImage = (src: string) => new Promise<void>((resolve) => {
+      const image = new Image();
+      let settled = false;
+      const finish = () => {
+        if (settled) return;
+        settled = true;
+        window.clearTimeout(fallbackTimer);
+        image.onload = null;
+        image.onerror = null;
+        resolve();
+      };
+      const fallbackTimer = window.setTimeout(finish, 4500);
+      image.onload = finish;
+      image.onerror = finish;
+      image.src = src;
+      if (image.complete) finish();
+    });
+    void Promise.all([
+      loadEssentialImage(defaultConfig.hero_image),
+      loadEssentialImage('/about-mukesh.jpg'),
+    ]).then(() => { if (!cancelled) setIntroContentReady(true); });
+    return () => {
+      cancelled = true;
+      window.clearTimeout(minimumTimer);
+    };
+  }, [showStudioIntro]);
+
+  useEffect(() => {
+    if (!showStudioIntro || !introMinimumElapsed || !introContentReady || introExiting) return;
+    setIntroExiting(true);
+    introExitTimer.current = window.setTimeout(() => {
+      markStudioIntroCompleted();
+      setShowStudioIntro(false);
+      introExitTimer.current = null;
+    }, reduceMotion ? 0 : 450);
+    return () => {
+      if (introExitTimer.current !== null) {
+        window.clearTimeout(introExitTimer.current);
+        introExitTimer.current = null;
+      }
+    };
+  }, [showStudioIntro, introMinimumElapsed, introContentReady, introExiting, reduceMotion]);
 
   useEffect(() => {
     const root = document.querySelector('.site-shell');
@@ -579,6 +646,15 @@ function PortfolioSite() {
       </footer>
 
       <a className="whatsapp-float" href={wa('a photography booking')} target="_blank" rel="noreferrer" aria-label="Contact Meera Photo Studio on WhatsApp"><MessageCircle size={21} /><span>Let's talk</span></a>
+
+      {showStudioIntro && <div className={`studio-loading-screen${introExiting ? ' is-exiting' : ''}`} role="status" aria-live="polite" aria-label="Loading Meera Photo Studio" aria-hidden={introExiting ? true : undefined}>
+        <a href="#home" className="wordmark studio-loading-brand" tabIndex={-1} aria-label="Meera Photo Studio">
+          <span className="wordmark-icon"><Aperture size={30} strokeWidth={1.35} aria-hidden="true" /></span>
+          <span><strong>MEERA</strong><small>PHOTO STUDIO</small></span>
+        </a>
+        <p>Welcome to Meera Photo Studio. High-quality photographs may take a little time to load on your first visit. Kindly wait a moment while the images appear. Thank you for your patience.</p>
+        <div className="studio-loading-track" aria-hidden="true"><span /></div>
+      </div>}
 
       <AnimatePresence>
         {activeVideo && <VideoPlayerModal video={activeVideo} onClose={() => setActiveVideo(null)} />}
