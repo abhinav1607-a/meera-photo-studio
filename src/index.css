@@ -1114,3 +1114,48 @@ main > section[id] { scroll-margin-top: 96px; }
   .services .how-work-heading > p,
   .services .how-work-step > p { color: #F2F0EA; }
 }
+
+
+/* Coordinated four-step progress timeline */
+.how-work-steps { position: relative; }
+.how-work-track {
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  left: 12.5%;
+  right: 12.5%;
+  height: 70px;
+  pointer-events: none;
+}
+.how-work-track svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.how-work-track-dots {
+  fill: none;
+  stroke: rgba(201,169,110,.52);
+  stroke-width: 1.2;
+  stroke-dasharray: 2.5 3.5;
+}
+.how-work-track-progress {
+  fill: none;
+  stroke: #D9B978;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: stroke-dashoffset 820ms cubic-bezier(.22, 1, .36, 1);
+  filter: drop-shadow(0 0 1px rgba(201,169,110,.14));
+}
+.how-work-step { z-index: 1; }
+.how-work-step.is-active .how-work-icon {
+  background: #d9b978;
+  border-color: #c6a35f;
+  color: #17263a;
+  transform: scale(1.07);
+  box-shadow: 0 7px 20px rgba(112,82,32,.14);
+}
+.how-work-step.is-active h3 { color: #E2C58F; }
+.how-work-step:focus-visible { outline: 2px solid #C9A96E; outline-offset: 5px; }
+@media (max-width: 900px) {
+  .how-work-track { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .how-work-track-progress { transition: none !important; }
+}
