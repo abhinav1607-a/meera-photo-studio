@@ -1159,3 +1159,17 @@ main > section[id] { scroll-margin-top: 96px; }
 @media (prefers-reduced-motion: reduce) {
   .how-work-track-progress { transition: none !important; }
 }
+
+/* First-visit introduction: restrained fade-out, independent of section transitions */
+.studio-loading-screen {
+  opacity: 1;
+  transition: opacity 450ms cubic-bezier(.22, 1, .36, 1);
+  pointer-events: auto;
+}
+.studio-loading-screen.is-exiting {
+  opacity: 0;
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .studio-loading-screen { transition: none; }
+}
