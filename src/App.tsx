@@ -441,7 +441,7 @@ function PortfolioSite() {
             <p>Tell us what you're planning. We'll help you make room for the moments you'll want to remember.</p>
           </div>
           <div className="booking-list">
-            <button type="button" className="booking-custom" aria-label="Discuss a custom shoot requirement on WhatsApp" onClick={() => openWhatsApp('a custom shoot requirement', 'I have a photography requirement that is not listed in your services. I would like to discuss the details.')}><span><MessageCircle size={18} /></span><strong>Something Else? <em>Let's Discuss Together.</em><small>Have a unique requirement? Tell us about it on WhatsApp.</small></strong><ArrowUpRight size={21} /></button>
+            <button type="button" className="booking-custom" aria-label="Discuss a custom shoot requirement on WhatsApp" onClick={() => openWhatsApp('a custom shoot requirement', 'I have a shoot requirement that is not listed in your services. I would like to discuss the details.')}><span><MessageCircle size={18} /></span><strong>Something Else? <em>Let's Discuss Together.</em><small>Have a unique requirement? Tell us about it on WhatsApp.</small></strong><ArrowUpRight size={21} /></button>
             {['Wedding Shoot', 'Pre-Wedding Shoots', 'Birthday Shoot', 'Retirement & Anniversary Shoot', 'Events & Celebrations', 'School & College Shoots', 'Sports Shoot', 'Corporate Sector Shoot', 'Karizma Albums (Designer Albums)'].map((service, index) => (
               <button type="button" key={service} onClick={() => openWhatsApp(service)}><span>{String(index + 1).padStart(2, '0')}</span><strong>{service}</strong><ArrowUpRight size={19} /></button>
             ))}
