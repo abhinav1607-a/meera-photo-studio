@@ -41,7 +41,7 @@ img { display: block; max-width: 100%; }
 .mobile-book, .menu-toggle { display: none; }
 .hero { min-height: min(790px, calc(100svh - 82px)); min-height: clamp(640px, calc(100svh - 82px), 900px); position: relative; display: flex; align-items: center; padding: 80px clamp(24px, 9vw, 142px) 118px; color: white; background: #15273a; isolation: isolate; }
 .hero-image, .hero-shade { position: absolute; inset: 0; z-index: -1; }
-.hero-image { background-image: url('https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1800&q=80'); background-position: center 54%; background-size: cover; transform: scale(1.015); animation: hero-settle 1.6s ease-out both; }
+.hero-image { background-image: url('https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=2400&q=90'); background-position: center 54%; background-size: cover; transform: scale(1.015); animation: hero-settle 1.6s ease-out both; }
 .hero-shade { background: linear-gradient(90deg, rgba(6,15,28,.83) 0%, rgba(6,15,28,.61) 40%, rgba(6,15,28,.12) 100%), linear-gradient(0deg, rgba(6,15,28,.43), transparent 34%); }
 @keyframes hero-settle { from { transform: scale(1.08); } to { transform: scale(1.015); } }
 .hero-content { width: min(760px, 100%); position: relative; }
