@@ -402,7 +402,7 @@ function PortfolioSite() {
               <div className="how-work-track" aria-hidden="true">
                 <svg viewBox="0 0 1000 70" preserveAspectRatio="none" focusable="false">
                   <path className="how-work-track-dots" d="M0 35 H1000" />
-                  <path className="how-work-track-progress" d="M125 35 H875" style={{ strokeDasharray: 1000, strokeDashoffset: 1000 - (Math.max(0, activeWorkStep - 1) / 3) * 1000 }} />
+                  <path className="how-work-track-progress" d="M0 35 H1000" style={{ strokeDasharray: 1000, strokeDashoffset: 1000 - (Math.max(0, activeWorkStep - 1) / 3) * 1000 }} />
                 </svg>
               </div>
               {[
