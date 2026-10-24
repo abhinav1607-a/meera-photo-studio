@@ -247,13 +247,11 @@ function PortfolioSite() {
       setShowStudioIntro(false);
       introExitTimer.current = null;
     }, reduceMotion ? 0 : 450);
-    return () => {
-      if (introExitTimer.current !== null) {
-        window.clearTimeout(introExitTimer.current);
-        introExitTimer.current = null;
-      }
-    };
   }, [showStudioIntro, introMinimumElapsed, introContentReady, introExiting, reduceMotion]);
+
+  useEffect(() => () => {
+    if (introExitTimer.current !== null) window.clearTimeout(introExitTimer.current);
+  }, []);
 
   useEffect(() => {
     const root = document.querySelector('.site-shell');
