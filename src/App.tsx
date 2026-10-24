@@ -442,7 +442,7 @@ function PortfolioSite() {
           </div>
           <div className="booking-list">
             <button type="button" className="booking-custom" aria-label="Discuss a custom photography requirement on WhatsApp" onClick={() => openWhatsApp('a custom photography requirement', 'I have a photography requirement that is not listed in your services. I would like to discuss the details.')}><span><MessageCircle size={18} /></span><strong>Something Else? <em>Let's Discuss Together.</em><small>Have a unique requirement? Tell us about it on WhatsApp.</small></strong><ArrowUpRight size={21} /></button>
-            {['Wedding Photography', 'Pre-Wedding Shoots', 'Birthday Photography', 'Retirement & Anniversary Photography', 'Events & Celebrations', 'School & College Shoots', 'Sports Photography', 'Karizma Albums (Designer Albums)'].map((service, index) => (
+            {['Wedding Photography', 'Pre-Wedding Shoots', 'Birthday Photography', 'Retirement & Anniversary Photography', 'Events & Celebrations', 'School & College Shoots', 'Sports Photography', 'Corporate Sector Shoot', 'Karizma Albums (Designer Albums)'].map((service, index) => (
               <button type="button" key={service} onClick={() => openWhatsApp(service)}><span>{String(index + 1).padStart(2, '0')}</span><strong>{service}</strong><ArrowUpRight size={19} /></button>
             ))}
             <p>Also accepting enquiries for institutional shoots, sports events, films, drone shoots, portraits and designer Karizma Albums.</p>
