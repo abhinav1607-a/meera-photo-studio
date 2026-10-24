@@ -511,7 +511,7 @@ function PortfolioSite() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: reduceMotion ? 0 : 0.22, delay: reduceMotion ? 0 : Math.min(index * 0.035, 0.21) }}
                 >
-                  <img src={optimizedImageUrl(photo.image_url, 1000)} alt={photo.alt_text || photo.title} loading={index < 3 ? 'eager' : 'lazy'} decoding="async" />
+                  <img src={optimizedImageUrl(photo.image_url, 1000)} alt={photo.alt_text || photo.title} loading="lazy" decoding="async" />
                   <span className="portfolio-hover"><span>{photo.category}</span><strong>{photo.title}</strong><i><ArrowUpRight size={18} /></i></span>
                 </motion.button>
               ))}
