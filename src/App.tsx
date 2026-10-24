@@ -172,6 +172,7 @@ function AboutStatistics() {
 
 function PortfolioSite() {
   const reduceMotion = useReducedMotion();
+  const [activeWorkStep, setActiveWorkStep] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const [category, setCategory] = useState('All Work');
   const [showAllWork, setShowAllWork] = useState(false);
@@ -397,14 +398,20 @@ function PortfolioSite() {
               <h2>From First Call to <em>Final Album</em></h2>
               <p>A simple, unhurried process — so you can stay present in your moments while we take care of the rest.</p>
             </div>
-            <div className="how-work-steps">
+            <div className="how-work-steps" onMouseLeave={() => setActiveWorkStep(0)} onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setActiveWorkStep(0); }}>
+              <div className="how-work-track" aria-hidden="true">
+                <svg viewBox="0 0 1000 70" preserveAspectRatio="none" focusable="false">
+                  <path className="how-work-track-dots" d="M125 35 H875" />
+                  <path className="how-work-track-progress" d="M125 35 H875" style={{ strokeDasharray: 750, strokeDashoffset: 750 - (Math.max(0, activeWorkStep - 1) / 3) * 750 }} />
+                </svg>
+              </div>
               {[
                 { number: '01', title: 'Consult', Icon: MessageCircle, description: 'Share your date, venue and ideas with us over a call, WhatsApp or a Meeting.' },
                 { number: '02', title: 'Plan', Icon: CalendarCheck, description: 'We recommend the right package, shot list and locations to suit your event and budget.' },
                 { number: '03', title: 'Capture', Icon: Aperture, description: 'On the day, our team covers every ritual, emotion and candid moment — calmly and on time.' },
                 { number: '04', title: 'Deliver', Icon: BookOpen, description: 'Carefully edited photos, films and premium albums, delivered ready to treasure.' },
               ].map(({ number, title, Icon, description }, index) => (
-                <motion.article className="how-work-step" key={number} initial={reduceMotion ? false : { opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.25 }} transition={{ duration: 0.48, delay: reduceMotion ? 0 : index * 0.12, ease: [0.22, 1, 0.36, 1] }}>
+                <motion.article className={`how-work-step${activeWorkStep === index + 1 ? ' is-active' : ''}`} key={number} tabIndex={0} onMouseEnter={() => setActiveWorkStep(index + 1)} onFocus={() => setActiveWorkStep(index + 1)} initial={reduceMotion ? false : { opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.25 }} transition={{ duration: 0.48, delay: reduceMotion ? 0 : index * 0.12, ease: [0.22, 1, 0.36, 1] }}>
                   <div className="how-work-icon-wrap">
                     <span className="how-work-number">{number}</span>
                     <span className="how-work-icon"><Icon size={27} strokeWidth={1.45} aria-hidden="true" /></span>
