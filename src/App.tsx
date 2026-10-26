@@ -650,7 +650,7 @@ function PortfolioSite() {
           <span className="wordmark-icon"><Aperture size={30} strokeWidth={1.35} aria-hidden="true" /></span>
           <span><strong>MEERA</strong><small>PHOTO STUDIO</small></span>
         </a>
-        <p>Welcome to Meera Photo Studio. High-quality photographs may take a little time to load on your first visit. Kindly wait a moment while the images appear. Thank you for your patience.</p>
+        <p>Welcome to Meera Photo Studio. High-quality photographs may take a little time to load on your first visit. Kindly wait a moment while the images appear. Thank you for your patience.<br /><span className="studio-loading-note">High-resolution photos can take a moment to load depending on your internet connection. Thanks for your patience.</span></p>
         <div className="studio-loading-track" aria-hidden="true"><span /></div>
       </div>}
 
