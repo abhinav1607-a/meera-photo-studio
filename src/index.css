@@ -123,9 +123,9 @@ img { display: block; max-width: 100%; }
 .portfolio { background: var(--ivory); }
 .portfolio-heading { margin-bottom: 37px; }
 .filter-row { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 28px; }
-.filter-pill { position: relative; border: 1px solid #d6dce2; color: #627184; background: transparent; padding: 10px 13px; font-size: 9px; cursor: pointer; transform: translateZ(0); transition: background .25s ease, border-color .25s ease, color .25s ease, box-shadow .25s ease, transform .25s ease; }
-.filter-pill:hover { border-color: #9b8658; color: var(--navy); background: rgba(185,167,122,.08); transform: translateY(-1px); }
-.filter-pill.active { background: var(--navy); border-color: #b9a77a; color: #faf5e9; outline: 1px solid rgba(185,167,122,.62); outline-offset: 2px; box-shadow: 0 0 0 3px rgba(185,167,122,.11); transform: scale(1.015); }
+.filter-pill { position: relative; border: 1px solid #d6dce2; color: #FFFFFF; background: transparent; padding: 10px 13px; font-size: 11px; font-weight: 600; cursor: pointer; transform: translateZ(0); transition: background .25s ease, border-color .25s ease, color .25s ease, box-shadow .25s ease, transform .25s ease; }
+.filter-pill:hover { border-color: #9b8658; color: #FFFFFF; background: rgba(185,167,122,.08); transform: translateY(-1px); }
+.filter-pill.active { background: var(--navy); border-color: #b9a77a; color: #FFFFFF; outline: 1px solid rgba(185,167,122,.62); outline-offset: 2px; box-shadow: 0 0 0 3px rgba(185,167,122,.11); transform: scale(1.015); }
 .filter-pill:focus-visible { outline: 2px solid #b9a77a; outline-offset: 3px; }
 @media (prefers-reduced-motion: reduce) {
   .filter-pill { transition: none; }
