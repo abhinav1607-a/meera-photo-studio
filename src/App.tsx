@@ -55,12 +55,12 @@ function getOptimizedImageUrl(src: string, width: number) {
   if (!src.includes('res.cloudinary.com/') || !src.includes('/image/upload/')) return src;
   const marker = '/image/upload/';
   const index = src.indexOf(marker);
-  return src.slice(0, index + marker.length) + 'f_auto,q_auto,c_limit,w_' + width + '/' + src.slice(index + marker.length);
+  return src.slice(0, index + marker.length) + 'f_auto,q_100,c_limit,w_' + width + '/' + src.slice(index + marker.length);
 }
 
 function getResponsiveImageSrcSet(src: string) {
   if (!src.includes('res.cloudinary.com/') || !src.includes('/image/upload/')) return undefined;
-  return [480, 800, 1200].map((width) => getOptimizedImageUrl(src, width) + ' ' + width + 'w').join(', ');
+  return [480, 800, 1200, 1600].map((width) => getOptimizedImageUrl(src, width) + ' ' + width + 'w').join(', ');
 }
 
 const INTRO_STORAGE_KEY = 'meeraIntroLoadingCompleted';
