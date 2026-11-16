@@ -49,6 +49,20 @@ const WHATSAPP_NUMBER = '919827486699';
 const PHONE_DISPLAY = '+91 9827486699';
 const EMAIL_ADDRESS = 'meerastudiorpr@gmail.com';
 
+// Deliver responsive, browser-selected Cloudinary image sizes for gallery cards.
+// Other image hosts are left untouched so existing public URLs keep working.
+function getOptimizedImageUrl(src: string, width: number) {
+  if (!src.includes('res.cloudinary.com/') || !src.includes('/image/upload/')) return src;
+  const marker = '/image/upload/';
+  const index = src.indexOf(marker);
+  return src.slice(0, index + marker.length) + 'f_auto,q_auto,c_limit,w_' + width + '/' + src.slice(index + marker.length);
+}
+
+function getResponsiveImageSrcSet(src: string) {
+  if (!src.includes('res.cloudinary.com/') || !src.includes('/image/upload/')) return undefined;
+  return [480, 800, 1200].map((width) => getOptimizedImageUrl(src, width) + ' ' + width + 'w').join(', ');
+}
+
 const INTRO_STORAGE_KEY = 'meeraIntroLoadingCompleted';
 let introCompletedInMemory = false;
 
@@ -549,7 +563,7 @@ function PortfolioSite() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: reduceMotion ? 0 : 0.22, delay: reduceMotion ? 0 : Math.min(index * 0.035, 0.21) }}
                 >
-                  <img src={photo.image_url} alt={photo.alt_text || photo.title} loading="lazy" />
+                  <img src={getOptimizedImageUrl(photo.image_url, 800)} srcSet={getResponsiveImageSrcSet(photo.image_url)} sizes="(max-width: 700px) 50vw, (max-width: 1100px) 33vw, 30vw" alt={photo.alt_text || photo.title} loading="lazy" decoding="async" />
                   <span className="portfolio-hover"><span>{photo.category}</span><strong>{photo.title}</strong><i><ArrowUpRight size={18} /></i></span>
                 </motion.button>
               ))}
